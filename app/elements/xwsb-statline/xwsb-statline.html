@@ -1,0 +1,93 @@
+<link rel="import" href="../xwsb-icon/xwsb-icon.html">
+
+<dom-module id="xwsb-statline">
+
+<style>
+    :host {
+        background-color: var(--light-primary-color);
+        padding: 6px 10px;
+        display: inline-block;
+        border: 1px solid var(--divider-color);
+    }
+    span {
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+    .skill {
+        color: var(--xwsb-pilot-skill-color);
+        font-weight: bold;
+    }
+    .attack {
+        color: var(--xwsb-attack-color);
+    }
+    .agility {
+        color: var(--xwsb-agility-color);
+    }
+    .hull {
+        color: var(--xwsb-hull-color);
+    }
+    .shield {
+        color: var(--xwsb-shield-color);
+    }
+</style>
+
+<template>
+	  
+	  <span class="skill">{{pilot.skill}}</span>
+	  
+   <xwsb-icon class="attack" icon="attack"></xwsb-icon>
+	  <template is="dom-if" if="{{pilot.attack}}">
+	      <span class="attack">{{pilot.attack}}</span>
+	  </template>
+	  <template is="dom-if" if="{{!pilot.attack}}">
+	      <span class="attack">{{ship.attack}}</span>
+	  </template>
+	  
+	  <xwsb-icon class="agility" icon="agility"></xwsb-icon>
+   <template is="dom-if" if="{{pilot.agility}}">
+	      <span class="agility">{{pilot.agility}}</span>
+	  </template>
+	  <template is="dom-if" if="{{!pilot.agility}}">
+	      <span class="agility">{{ship.agility}}</span>
+	  </template>
+	   
+	  <xwsb-icon class="hull" icon="hull"></xwsb-icon>
+	  <template is="dom-if" if="{{pilot.hull}}">
+	      <span class="hull">{{pilot.hull}}</span>
+	  </template>
+	  <template is="dom-if" if="{{!pilot.hull}}">
+	      <span class="hull">{{ship.hull}}</span>
+	  </template>
+	  
+	  <xwsb-icon class="shield" icon="shield"></xwsb-icon>
+	  <template is="dom-if" if="{{pilot.shield}}">
+	      <span class="shield">{{pilot.shield}}</span>
+	  </template>
+	  <template is="dom-if" if="{{!pilot.shield}}">
+	      <span class="shield">{{ship.shield}}</span>
+	  </template>
+	  
+</template>
+	
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-statline',
+            properties: {
+                pilot: {
+                    type: Object,
+                    notify: true
+                },
+                ship: {
+                    type: Object,
+                    notify: true
+                }
+            },
+            ready: function() {
+                
+            }
+        });
+    })();
+</script>
+
+</dom-module>

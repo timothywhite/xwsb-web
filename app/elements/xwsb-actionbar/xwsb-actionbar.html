@@ -1,0 +1,36 @@
+<link rel="import" href="../xwsb-icon/xwsb-icon.html">
+
+<dom-module id="xwsb-actionbar">
+
+<style>
+:host {
+    display: inline-block;
+    border: 1px solid var(--divider-color);
+    padding: 8px 7px 5px 7px;
+    background-color: var(--light-primary-color);
+}
+</style>
+
+<template>
+    <template id="actionList" is="dom-repeat" items="{{actions}}" as="action">
+        <xwsb-icon icon="{{action.canonical}}"></xwsb-icon>
+    </template>
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-actionbar',
+            properties: {
+                actions: {
+                    type: Array,
+                    notify: true
+                }
+            },
+            ready: function() {
+                
+            }
+        });
+    })();
+</script>
+
+</dom-module>

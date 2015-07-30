@@ -1,0 +1,96 @@
+<link rel="import" href="../xwsb-icon/xwsb-icon.html">
+
+<dom-module id="xwsb-card-text">
+
+<style>
+    
+</style>
+
+<template>
+    <div id="container"></div>
+</template>
+	
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-card-text',
+            properties: {
+                text: {
+                    type: String,
+                    notify: true,
+                    observer: '_textChanged'
+                }
+            },
+            ready: function() {
+                
+            },
+            _renderTag: function(tag) {
+                var el = document.createElement('xwsb-icon'),
+                    specialCases = {
+                        '{BR}': function (tag) {
+                            return document.createElement('br');
+                        }
+                    };
+                    
+                if (specialCases[tag]) {
+                    el = specialCases[tag](tag);
+                } else {
+                    el.icon = tag.replace(/[{}]/g,'').toLowerCase();
+                }
+                                
+                return el;
+            },
+            _renderDoubleTag: function(doubleTag) {
+                var textRegEx = /{[^}]+}([^{]+){\/[^}]+}/,
+                    tagRegEx = /{[^}]+}/,
+                    tag = doubleTag.match(tagRegEx)[0],
+                    text = doubleTag.replace(textRegEx, '$1'),
+                    el;
+                    
+                switch (tag) {
+                    case '{STRONG}':
+                        el = document.createElement('strong');
+                        break;
+                    case '{EM}':
+                        el = document.createElement('em');
+                        break;
+                }
+                
+                el.innerText = text;
+                return el;
+            },
+            _renderText: function(text) {
+                var el = document.createElement('span');
+                el.innerText = text;
+                return el;
+            },
+            _textChanged: function() {
+                var text = this.text,
+                    doubleTagRegEx = /^{[^}]+}[^{]+{\/[^}]+}/,
+                    tagRegEx = /^{[^}]+}/,
+                    textRegEx = /^[^{]+/,
+                    match;
+                    
+                this.$.container.innerHTML = '';
+                    
+                while (text.length) {
+                    if (match = text.match(doubleTagRegEx)) {
+                        match = match[0];
+                        this.$.container.appendChild(this._renderDoubleTag(match));
+                        text = text.replace(doubleTagRegEx, '');
+                    } else if (match = text.match(tagRegEx)) {
+                        match = match[0];
+                        this.$.container.appendChild(this._renderTag(match));
+                        text = text.replace(tagRegEx, '');
+                    } else {
+                        match = text.match(textRegEx)[0];
+                        this.$.container.appendChild(this._renderText(match));
+                        text = text.replace(textRegEx, '');
+                    }
+                }
+            }
+        });
+    })();
+</script>
+
+</dom-module>

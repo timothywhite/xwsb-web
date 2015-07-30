@@ -1,0 +1,35 @@
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="../xwsb-statline/xwsb-statline.html">
+<link rel="import" href="../xwsb-actionbar/xwsb-actionbar.html">
+
+<dom-module id="xwsb-pilot-name">
+
+<style>
+    :host {
+        display: block;
+    }
+</style>
+
+<template>
+    <template is="dom-if" if="{{pilot.unique}}">&#x2022;</template>
+    <span>{{pilot.name}}</span>
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-pilot-name',
+            properties: {
+                pilot: {
+                    type: Object,
+                    notify: true
+                }
+            },
+            ready: function() {
+                
+            }
+        });
+    })();
+</script>
+
+</dom-module>

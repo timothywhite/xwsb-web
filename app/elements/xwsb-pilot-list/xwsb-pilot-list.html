@@ -1,0 +1,87 @@
+<link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
+
+<link rel="import" href="../xwsb-api/xwsb-api.html">
+
+<link rel="import" href="xwsb-pilot-list-ship.html">
+<link rel="import" href="xwsb-pilot-list-pilot.html">
+
+<dom-module id="xwsb-pilot-list">
+
+    <style>
+    </style>
+
+    <template>
+	  
+        <xwsb-api id="api"></xwsb-api>
+        <template id="shipList" is="dom-repeat" items="{{ships}}" as="ship" sort="_sortShips" filter="_filterShips">
+            <xwsb-pilot-list-ship on-select="_shipSelect" ship="{{ship}}"></xwsb-pilot-list-ship>
+            <iron-collapse>
+                <template is="dom-repeat" items="{{ship.pilots}}" as="pilot" sort="_sortPilots" filter="_filterPilots">
+                    <xwsb-pilot-list-pilot pilot="{{pilot}}" ship="{{ship}}" on-select="_pilotSelect"></xwsb-pilot-list-pilot>
+                </template>
+            </iron-collapse>
+        </template>
+			
+    </template>
+	
+<script>
+(function () {
+
+Polymer({
+    is: 'xwsb-pilot-list',
+    properties: {
+        ships: {
+            type: Array,
+            notify: true,
+            value: []
+        },
+        faction: {
+            type: Number,
+            notify: true,
+            value: 1,
+            observer: "_factionChange"
+        }
+    },
+    ready: function() {
+        this.$.api.getShips().then(function(data) {
+            this._loadShips(data.response);
+        }.bind(this));
+    },
+    _factionChange: function() {
+        this.$.shipList.render();
+    },
+    _filterPilots: function(pilot) {
+        return pilot.faction === this.faction;
+    },
+    _filterShips: function(ship) {
+        return ship.pilots.filter(this._filterPilots.bind(this)).length > 0;
+    },
+    _loadShips: function(data) {
+        this.ships = data;
+    },
+    _pilotSelect: function(el) {
+        var pilot = el.srcElement.pilot;
+        pilot.ship = el.srcElement.ship;
+        this.fire('xwsb-pilot-select', {
+            pilot: pilot
+        });
+    },
+    _shipSelect: function(el) {
+        //the next element sibling is the iron-collapse holding the pilots for the selected ship
+        el.srcElement.nextElementSibling.toggle();
+    },
+    _sortPilots: function(a, b) {
+        var skill = a.skill - b.skill,
+            points = a.points - b.points;
+         
+        return skill !== 0 ? skill : points;
+    },
+    _sortShips: function(a, b) {
+        return a.name === b.name ? 0 : (a.name > b.name) ? 1 : -1;
+    }
+});
+
+})();
+</script>
+
+</dom-module>

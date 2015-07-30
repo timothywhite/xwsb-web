@@ -1,0 +1,75 @@
+<link rel="import" href="../xwsb-icon/xwsb-icon.html">
+
+<dom-module id="xwsb-upgrade-slot">
+
+<style>
+    div {
+        display: inline-block;
+        border: 1px solid var(--divider-color);
+        background-color: var(--primary-background-color);
+        padding: 5px;
+        margin: 2px 0;
+        width: 256px;
+        font-weight: bold;
+    }
+    div.empty {
+        color: var(--dark-primary-color);
+        font-weight: normal;
+    }
+    xwsb-icon {
+        font-weight: normal;
+    }
+</style>
+
+<template>
+    
+    <div id="container">
+        <xwsb-icon icon="{{slot.canonical}}"></xwsb-icon>
+        <template is="dom-if" if="{{slot.upgrade}}">{{slot.upgrade.name}}</template>
+        <template is="dom-if" if="{{!slot.upgrade}}">{{slot.name}}</template>
+    </div>
+    
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-upgrade-slot',
+            properties: {
+                slot: {
+                    type: Object,
+                    notify: true,
+                    observer: '_updateSlot'
+                }
+            },
+            ready: function() {
+                
+            },
+            _slotMap: function(slot) {
+                return {
+                    1: 'elite',
+                    2: 'modification',
+                    3: 'title',
+                    4: 'astromech',
+                    5: 'bomb',
+                    6: 'cannon',
+                    7: 'crew',
+                    8: 'illicit',
+                    9: 'missile',
+                    10: 'salvagedastromech',
+                    11: 'system',
+                    12: 'torpedo',
+                    13: 'turret'
+                }[slot.id];
+            },
+            _updateSlot: function() {
+                if (this.slot.upgrade) {
+                    this.$.container.classList.remove('empty');
+                } else {
+                    this.$.container.classList.add('empty');
+                }
+            }
+        });
+    })();
+</script>
+
+</dom-module>

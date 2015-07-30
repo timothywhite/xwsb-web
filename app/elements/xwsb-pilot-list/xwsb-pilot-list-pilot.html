@@ -1,0 +1,107 @@
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+
+<link rel="import" href="../xwsb-statline/xwsb-statline.html">
+<link rel="import" href="../xwsb-actionbar/xwsb-actionbar.html">
+<link rel="import" href="../xwsb-pilot-name/xwsb-pilot-name.html">
+<link rel="import" href="../xwsb-card-text/xwsb-card-text.html">
+
+<dom-module id="xwsb-pilot-list-pilot">
+
+<style>
+    .pilot {
+        background-color: var(--primary-background-color)
+    }
+    .pilot-skill {
+        color: var(--xwsb-pilot-skill-color);
+        font-weight: bold;
+        margin: 0 10px 0 0;
+    }
+    .pilot-name {
+        font-size: 12px;
+    }
+    .pilot-points {
+          font-size:12px;
+          font-weight: bold;
+    }
+    .toolbar {
+        margin: 0 0 0 10px;
+    }
+    #dialog {
+        max-height: 500px;
+    }
+    
+    #dialog [icon="close"] {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        margin-top: 0px;
+        padding: 0;
+    }
+</style>
+
+<template>
+	  
+    <paper-item class="pilot" on-tap="_select">
+        <span class="pilot-skill" item-icon>{{pilot.skill}}</span>
+        <xwsb-pilot-name class="pilot-name" pilot="{{pilot}}"></xwsb-pilot-name>
+        <span class="flex"></span>
+        <span class="pilot-points">{{pilot.points}}</span>
+        <span class="toolbar">
+            <iron-icon icon="info-outline" on-tap="_info"></iron-icon>
+        </span>
+    </paper-item>
+    
+    <paper-dialog id="dialog" modal>
+        
+        <h2>
+            <span>{{pilot.name}}</span>
+        </h2>
+        <div>
+            <xwsb-statline pilot="{{pilot}}" ship="{{ship}}"></xwsb-statline>
+            <xwsb-actionbar actions="{{ship.actions}}"></xwsb-actionbar>
+            <xwsb-card-text text="{{pilot.text}}"></xwsb-card-text>
+        </div>
+        <iron-icon icon="close" dialog-dismiss></iron-icon>
+        
+    </paper-dialog>
+			
+</template>
+	
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-pilot-list-pilot',
+            properties: {
+                pilot: {
+                    type: Object,
+                    notify: true
+                },
+                ship: {
+                    type: Object
+                }
+            },
+            ready: function() {
+                this.$.dialog.addEventListener('iron-overlay-closed', this._dialogClose.bind(this));
+            },
+            _select: function() {
+                this.fire('select');
+            },
+            _info: function(evt) {
+                this._dialogOpen();
+                evt.stopPropagation();
+            },
+            _dialogOpen: function() {
+                //var body = document.querySelector('body');
+                //body.appendChild(this.$.dialog);
+                this.$.dialog.open();  
+            },
+            _dialogClose: function() {
+                //this.appendChild(this.$.dialog);
+            }
+        });
+    })();
+</script>
+
+</dom-module>

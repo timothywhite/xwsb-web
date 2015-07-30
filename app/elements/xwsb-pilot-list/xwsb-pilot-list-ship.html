@@ -1,0 +1,42 @@
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+
+<link rel="import" href="../xwsb-icon/xwsb-icon.html">
+
+<dom-module id="xwsb-pilot-list-ship">
+
+	<style>
+	    paper-icon-item {
+	        border-bottom: 1px solid var(--divider-color);
+	    }
+	</style>
+
+	<template>
+	  
+	  <paper-icon-item on-tap="_select">
+	      <xwsb-icon icon="{{ship.canonical}}" size="46px" item-icon></xwsb-icon>
+	      <span>{{ship.name}}</span>
+	  </paper-item>
+			
+	</template>
+	
+		<script>
+			(function () {
+				Polymer({
+				is: 'xwsb-pilot-list-ship',
+				properties: {
+					ship: {
+					    type: Object,
+					    notify: true
+					}
+				},
+				ready: function() {
+				
+				},
+				_select: function() {
+				    this.fire('select');
+				}
+    });
+   })();
+  </script>
+
+</dom-module>

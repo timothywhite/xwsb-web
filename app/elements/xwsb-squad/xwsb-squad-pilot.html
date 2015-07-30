@@ -1,0 +1,134 @@
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="../xwsb-statline/xwsb-statline.html">
+<link rel="import" href="../xwsb-actionbar/xwsb-actionbar.html">
+<link rel="import" href="../xwsb-pilot-name/xwsb-pilot-name.html">
+<link rel="import" href="../xwsb-api/xwsb-api.html">
+
+<link rel="import" href="xwsb-upgrade-slot.html">
+
+<dom-module id="xwsb-squad-pilot">
+
+<style>
+    paper-material {
+        margin: 5px 20px;
+        padding: 20px;
+        max-width: 556px;
+        background-color: var(--secondary-background-color);
+    }
+    xwsb-pilot-name {
+        margin: 10px 0;
+        font-size: 20px;
+    }
+    xwsb-statline {
+        font-size: 18px;
+        margin: 2px 0;
+        min-width: 247px;
+    }
+    xwsb-actionbar {
+        font-size: 19.4px;
+        margin: 2px 0;
+        min-width: 253px;
+    }
+    .upgrade-list {
+        padding: 20px 5px 10px 1px;
+    }
+</style>
+
+<template>
+    
+    <xwsb-api id="api"></xwsb-api>
+    
+    <paper-material elevation="1">
+        <xwsb-pilot-name pilot="{{pilot.pilot}}"></xwsb-pilot-name>
+        <xwsb-statline pilot="{{pilot.pilot}}" ship="{{pilot.pilot.ship}}"></xwsb-statline>
+        <xwsb-actionbar id="actionbar" actions="{{pilot.pilot.ship.actions}}"></xwsb-actionbar>
+        <div class="upgrade-list">
+            <template is="dom-repeat" items="{{slots}}" as="slot" sort="_sortSlots">
+                <xwsb-upgrade-slot slot="{{slot}}"></xwsb-upgrade-slot>
+            </template>
+        </div>
+    </paper-material>
+    
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-squad-pilot',
+            properties: {
+                pilot: {
+                    type: Object,
+                    notify: true,
+                    observer: '_processPilot'
+                },
+                slots: {
+                    type: Array,
+                    notify: true
+                }
+            },
+            ready: function() {
+                
+            },
+            _addAction: function(data) {
+                this.pilot.pilot.ship.actions = this.pilot.pilot.ship.actions.concat([data.response]);
+                this.$.actionbar.actions = this.pilot.pilot.ship.actions;
+            },
+            _addUpgradeSlot: function(data) {
+                this.pilot.pilot.slots = this.pilot.pilot.slots.concat([data.response]);
+                this._processPilot();
+            },
+            _applyBonuses: function() {
+                if (!this.bonusesApplied) {
+                    this.pilot.upgrades.forEach(function(upgrade) {
+                        upgrade.bonuses.forEach(function(bonus) {
+                            switch (bonus.prop) {
+                                case 'upgrade_slots':
+                                    this.$.api.getUpgradeType(bonus.value).then(
+                                        this._addUpgradeSlot.bind(this)
+                                    );
+                                    break;
+                                case 'actions':
+                                    this.$.api.getAction(bonus.value).then(
+                                        this._addAction.bind(this)
+                                    );
+                                    break;
+                            }
+                        }.bind(this));
+                    }.bind(this));
+                    
+                    this.bonusesApplied = true;
+                }
+            },
+            _processPilot: function() {
+                var slots = this.pilot.pilot.slots.map(function(slot) {
+                    return {
+                        id: slot.id,
+                        name: slot.name,
+                        canonical: slot.canonical,
+                        order: slot.order
+                    };
+                });
+                this.pilot.upgrades.forEach(function(upgrade) {
+                    slots.filter(function(slot) {
+                        return slot.id === upgrade.type;
+                    }).some(function(slot) {
+                        if (!slot.upgrade) {
+                            slot.upgrade = upgrade;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    });
+                }.bind(this));
+                this.slots = slots;
+                
+                this._applyBonuses();
+            },
+            _sortSlots: function(a, b) {
+                return a.order - b.order;
+            }
+        });
+    })();
+</script>
+
+</dom-module>

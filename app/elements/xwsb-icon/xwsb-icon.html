@@ -1,0 +1,101 @@
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="../xwsb-statline/xwsb-statline.html">
+<link rel="import" href="../xwsb-actionbar/xwsb-actionbar.html">
+
+<style>
+    @font-face {
+        font-family: XWing;
+        src: url('xwing-miniatures.ttf'); }
+
+    @font-face {
+        font-family: XWingShip;
+        src: url('xwing-miniatures-ships.ttf'); }
+</style>
+
+<dom-module id="xwsb-icon">
+
+    <link rel="import" type="css"  href="xwsb-icon.css">
+
+    <template>
+        <i id="icon" class="xwing-miniatures-font"></i>
+    </template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-icon',
+            properties: {
+               icon: {
+                    type: String,
+                    notify: true,
+                    observer: '_updateIcon'
+                },
+                size: {
+                    type: String,
+                    notify: true,
+                    observer: '_updateSize'
+                },
+                color: {
+                    type: String,
+                    notify: true,
+                    observer: '_updateColor'
+                }
+            },
+            ready: function() {
+                
+            },
+            _isShip: function(ship) {
+                return [
+                    'aggressor',
+                    'awing',
+                    'bwing',
+                    'ewing',
+                    'firespray31',
+                    'hwk290',
+                    'kihraxzfighter',
+                    'kwing',
+                    'lambdaclassshuttle',
+                    'm3ainterceptor',
+                    'starviper',
+                    'tieadvanced',
+                    'tiebomber',
+                    'tiedefender',
+                    'tiefighter',
+                    'tieinterceptor',
+                    'tiephantom',
+                    'tiepunisher',
+                    'vt49decimator',
+                    'xwing',
+                    'yt1300',
+                    'yt2400',
+                    'yv666',
+                    'ywing',
+                    'z95headhunter'
+                ].indexOf(ship) !== -1;
+            },
+            _updateColor: function() {
+                this.$.icon.style.color = this.color;
+            },
+            _updateIcon: function(newValue, oldValue) {
+                if (this._isShip(newValue)) {
+                    this.$.icon.classList.add('xwing-miniatures-ship');
+                    this.$.icon.classList.remove('xwing-miniatures-font');
+
+                    this.$.icon.classList.remove('xwing-miniatures-ship-' + oldValue);
+                    this.$.icon.classList.add('xwing-miniatures-ship-' + newValue);
+                } else {
+                    this.$.icon.classList.remove('xwing-miniatures-ship');
+                    this.$.icon.classList.add('xwing-miniatures-font');
+                    
+                    this.$.icon.classList.remove('xwing-miniatures-font-' + oldValue);
+                    this.$.icon.classList.add('xwing-miniatures-font-' + newValue);
+                }
+            },
+            _updateSize: function() {
+                this.$.icon.style.fontSize = this.size;
+            }
+        });
+    })();
+</script>
+
+</dom-module>

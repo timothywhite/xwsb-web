@@ -1,0 +1,77 @@
+<link rel="import" href="../xwsb-api/xwsb-api.html">
+
+<link rel="import" href="xwsb-squad-pilot.html">
+
+<dom-module id="xwsb-squad">
+
+<style>
+
+</style>
+
+<template>
+
+    <xwsb-api id="api"></xwsb-api>
+    
+    <div id="container"></div>
+    
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-squad',
+            properties: {
+                id: {
+                    type: Number,
+                    notify: true,
+                    observer: '_idChanged',
+                    value: 1
+                },
+                name: {
+                    type: String,
+                    notify: true
+                },
+                pilots: {
+                    type: Array,
+                    notify: true,
+                    value: []
+                },
+                faction: {
+                    type: Number,
+                    notify: true
+                }
+                
+            },
+            ready: function() {
+                
+            },
+            addPilot: function(pilot) {
+                this.pilots = this.pilots.concat([pilot]);
+            },
+            _idChanged: function() {
+                if (!this._loading) {
+                    this._loading = true;
+                    
+                    this.$.api.getSquad(this.id).then(function(data) {
+                        //clear xwsb-squad-pilots
+                        while (this.$.container.firstChild) {
+                            Polymer.dom(this.$.container).removeChild(this.$.container.firstChild);
+                        }
+                        //add pilots from data.response.pilots
+                        data.response.pilots.forEach(function(pilot) {
+                            var squadPilot = document.createElement('xwsb-squad-pilot');
+                            squadPilot.pilot = pilot;
+                            Polymer.dom(this.$.container).appendChild(squadPilot);
+                        }.bind(this));
+                        this._loading = false;                
+                    }.bind(this));
+                }
+            },
+            _setId: function(el, data) {
+                this.id = data.reponse.id;
+                this._loading = false;
+            }
+        });
+    })();
+</script>
+
+</dom-module>

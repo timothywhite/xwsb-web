@@ -1,0 +1,67 @@
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="xwsb-api">
+
+<template>
+    <iron-ajax id="ajax"></iron-ajax>
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-api',
+            properties: {
+                type: {
+                    type: String
+                },
+                method: {
+                    type: String
+                },
+                auto: {
+                    type: Boolean
+                }
+            },
+            ready: function() {
+                this.BASE_URL = 'http://timwhite.org:8081/';
+            },
+            _buildURL: function(type, params) {
+                var url = this.BASE_URL + type + '/';
+                if (params) {
+                    params = Array.isArray(params) ? params : [params];
+                    params.forEach(function(param) {
+                        url += param + '/';
+                    });
+                }
+                return url;
+            },
+            _get(type, URLParams, queryParams) {
+                this.$.ajax.url = this._buildURL(type, URLParams);
+                this.$.ajax.method = 'GET';
+                this.$.ajax.params = queryParams ? queryParams : {};
+                return this.$.ajax.generateRequest().completes; 
+            },
+            getAction: function(id) {
+                return this._get('action', id);
+            },
+            getActions: function() {
+                return this._get('action');
+            },
+            getShips: function(filter) {
+                return this._get('ship', null, filter);
+            },
+            getSquad: function(id) {
+                return this._get('squad', id);
+            },
+            getSquads: function(filter) {
+                return this._get('squad', null, filter);
+            },
+            getUpgradeType: function(id) {
+                return this._get('upgrade/type', id);
+            },
+            getUpgradeTypes: function(filter) {
+                return this._get('upgrade/type', null, filter);
+            }
+        });
+    })();
+</script>
+
+</dom-module>
