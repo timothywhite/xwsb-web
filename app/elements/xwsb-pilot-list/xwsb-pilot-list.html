@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 
 <link rel="import" href="../xwsb-api/xwsb-api.html">
 
@@ -11,17 +12,39 @@
     </style>
 
     <template>
-	  
-        <xwsb-api id="api"></xwsb-api>
-        <template id="shipList" is="dom-repeat" items="{{ships}}" as="ship" sort="_sortShips" filter="_filterShips">
-            <xwsb-pilot-list-ship on-select="_shipSelect" ship="{{ship}}"></xwsb-pilot-list-ship>
-            <iron-collapse>
-                <template is="dom-repeat" items="{{ship.pilots}}" as="pilot" sort="_sortPilots" filter="_filterPilots">
-                    <xwsb-pilot-list-pilot pilot="{{pilot}}" ship="{{ship}}" on-select="_pilotSelect"></xwsb-pilot-list-pilot>
+	      <iron-pages attr-for-selected="data-faction" selected="{{faction}}">
+            <xwsb-api id="api"></xwsb-api>
+            <div data-faction="rebels">
+                <template is="dom-repeat" items="{{rebels}}" as="ship" sort="_sortShips">
+                    <xwsb-pilot-list-ship on-select="_shipSelect" ship="{{ship}}"></xwsb-pilot-list-ship>
+                    <iron-collapse>
+                        <template is="dom-repeat" items="{{ship.pilots}}" as="pilot" sort="_sortPilots">
+                            <xwsb-pilot-list-pilot pilot="{{pilot}}" ship="{{ship}}" on-select="_pilotSelect"></xwsb-pilot-list-pilot>
+                        </template>
+                    </iron-collapse>
                 </template>
-            </iron-collapse>
-        </template>
-			
+            </div>
+            <div data-faction="empire">
+                <template is="dom-repeat" items="{{empire}}" as="ship" sort="_sortShips">
+                    <xwsb-pilot-list-ship on-select="_shipSelect" ship="{{ship}}"></xwsb-pilot-list-ship>
+                    <iron-collapse>
+                        <template is="dom-repeat" items="{{ship.pilots}}" as="pilot" sort="_sortPilots">
+                            <xwsb-pilot-list-pilot pilot="{{pilot}}" ship="{{ship}}" on-select="_pilotSelect"></xwsb-pilot-list-pilot>
+                        </template>
+                    </iron-collapse>
+                </template>
+            </div>
+            <div data-faction="scum">
+                <template is="dom-repeat" items="{{scum}}" as="ship" sort="_sortShips">
+                    <xwsb-pilot-list-ship on-select="_shipSelect" ship="{{ship}}"></xwsb-pilot-list-ship>
+                    <iron-collapse>
+                        <template is="dom-repeat" items="{{ship.pilots}}" as="pilot" sort="_sortPilots">
+                            <xwsb-pilot-list-pilot pilot="{{pilot}}" ship="{{ship}}" on-select="_pilotSelect"></xwsb-pilot-list-pilot>
+                        </template>
+                    </iron-collapse>
+                </template>
+            </div>
+			    </iron-pages>
     </template>
 	
 <script>
@@ -30,34 +53,52 @@
 Polymer({
     is: 'xwsb-pilot-list',
     properties: {
-        ships: {
-            type: Array,
-            notify: true,
-            value: []
-        },
         faction: {
-            type: Number,
+            type: String,
             notify: true,
-            value: 1,
-            observer: "_factionChange"
-        }
+            value: 'empire'
+        },
+        rebels: Array,
+        empire: Array,
+        scum: Array
     },
     ready: function() {
         this.$.api.getShips().then(function(data) {
-            this._loadShips(data.response);
+            this._loadShips(data);
         }.bind(this));
     },
-    _factionChange: function() {
-        this.$.shipList.render();
+    _filter: function(data, faction) {
+        return data.filter(this._filterShips(faction)).map(function (ship) {
+            return {
+                id: ship.id,
+                name: ship.name,
+                canonical: ship.canonical,
+                attack: ship.attack,
+                agility: ship.agility,
+                hull: ship.hull,
+                shield: ship.shield,
+                base: ship.base,
+                actions: ship.actions,
+                maneuvers: ship.maneuvers,
+                expansions: ship.expansions,
+                pilots: ship.pilots.filter(this._filterPilots(faction))
+            };
+        }.bind(this));
     },
-    _filterPilots: function(pilot) {
-        return pilot.faction === this.faction;
+    _filterPilots: function(faction) {
+        return function(pilot) {
+            return pilot.faction.canonical === faction;
+        };
     },
-    _filterShips: function(ship) {
-        return ship.pilots.filter(this._filterPilots.bind(this)).length > 0;
+    _filterShips: function(faction) {
+        return function(ship) {
+            return ship.pilots.filter(this._filterPilots(faction)).length > 0;
+        }.bind(this);
     },
     _loadShips: function(data) {
-        this.ships = data;
+        this.empire = this._filter(data, 'empire');
+        this.rebels = this._filter(data, 'rebels');
+        this.scum = this._filter(data, 'scum');
     },
     _pilotSelect: function(el) {
         var pilot = el.srcElement.pilot;

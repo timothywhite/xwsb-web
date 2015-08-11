@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 
 <link rel="import" href="../xwsb-statline/xwsb-statline.html">
 <link rel="import" href="../xwsb-actionbar/xwsb-actionbar.html">
@@ -33,6 +34,11 @@
     .upgrade-list {
         padding: 20px 5px 10px 1px;
     }
+    [icon="close"] {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
 </style>
 
 <template>
@@ -40,14 +46,11 @@
     <xwsb-api id="api"></xwsb-api>
     
     <paper-material elevation="1">
-        <xwsb-pilot-name pilot="{{pilot.pilot}}"></xwsb-pilot-name>
-        <xwsb-statline pilot="{{pilot.pilot}}" ship="{{pilot.pilot.ship}}"></xwsb-statline>
-        <xwsb-actionbar id="actionbar" actions="{{pilot.pilot.ship.actions}}"></xwsb-actionbar>
-        <div class="upgrade-list">
-            <template is="dom-repeat" items="{{slots}}" as="slot" sort="_sortSlots">
-                <xwsb-upgrade-slot slot="{{slot}}"></xwsb-upgrade-slot>
-            </template>
-        </div>
+        <xwsb-pilot-name id="pilot-name" pilot="{{pilot.pilot}}"></xwsb-pilot-name>
+        <xwsb-statline id="statline" pilot="{{pilot.pilot}}" ship="{{pilot.pilot.ship}}" bonuses="{{bonuses}}"></xwsb-statline>
+        <xwsb-actionbar id="actionbar" actions="[[pilot.pilot.ship.actions]]"></xwsb-actionbar>
+        <div id="upgradeList" class="upgrade-list"><template is="dom-repeat" items="{{slots}}" as="slot" sort="_sortSlots"><xwsb-upgrade-slot slot="{{slot}}" pilot="{{pilot.pilot}}" hide="{{slot.hide}}" on-update="_updateUpgrades"></xwsb-upgrade-slot></template></div>
+        <iron-icon icon="close" on-tap="_remove"></iron-icon>
     </paper-material>
     
 </template>
@@ -69,63 +72,251 @@
             ready: function() {
                 
             },
+            points: function() {
+                return Array.prototype.reduce.call(this.$.upgradeList.childNodes, function(p, slot) {
+                    return p + (slot.points ? slot.points() : 0);
+                }, 0) + this.pilot.pilot.points;
+            },
             _addAction: function(data) {
-                this.pilot.pilot.ship.actions = this.pilot.pilot.ship.actions.concat([data.response]);
-                this.$.actionbar.actions = this.pilot.pilot.ship.actions;
+                this.bonuses.actions.push(data);
             },
             _addUpgradeSlot: function(data) {
-                this.pilot.pilot.slots = this.pilot.pilot.slots.concat([data.response]);
-                this._processPilot();
+                this.bonuses.slots.push(data);
             },
             _applyBonuses: function() {
-                if (!this.bonusesApplied) {
-                    this.pilot.upgrades.forEach(function(upgrade) {
-                        upgrade.bonuses.forEach(function(bonus) {
-                            switch (bonus.prop) {
-                                case 'upgrade_slots':
-                                    this.$.api.getUpgradeType(bonus.value).then(
-                                        this._addUpgradeSlot.bind(this)
-                                    );
-                                    break;
-                                case 'actions':
-                                    this.$.api.getAction(bonus.value).then(
-                                        this._addAction.bind(this)
-                                    );
-                                    break;
+                var promises = [];
+                this._initBonuses();
+                this.pilot.upgrades.forEach(function(spUpgrade) {
+                    if (spUpgrade.upgrade) {
+                        spUpgrade.bonuses = {};
+                        spUpgrade.upgrade.bonuses.forEach(function(bonus) {
+                            if (bonus.requirements.length === 0 || this._checkRequirements(bonus)) {
+                                switch (bonus.prop) {
+                                    case 'upgrade_slots':
+                                        promises.push(new Promise(function(resolve, reject) {
+                                            this.$.api.getUpgradeType(bonus.value).then(function(data) {
+                                                this._addUpgradeSlot(data);
+                                                resolve();
+                                            }.bind(this));
+                                        }.bind(this)));
+                                        break;
+                                    case 'actions':
+                                        promises.push(new Promise(function(resolve, reject) {
+                                            this.$.api.getAction(bonus.value).then(function(data) {
+                                                this._addAction(data);
+                                                resolve();
+                                            }.bind(this));
+                                        }.bind(this)));
+                                        break;
+                                    case 'points':
+                                        spUpgrade.bonuses.points = bonus.value;
+                                        break;
+                                    case 'skill':
+                                    case 'attack':
+                                    case 'agility':
+                                    case 'hull':
+                                    case 'shield':
+                                        this.bonuses[bonus.prop] += bonus.value;
+                                        this.$.statline.notifyPath('bonuses.' + bonus.prop, bonus.value);
+                                        break;
+                                }
                             }
                         }.bind(this));
-                    }.bind(this));
-                    
-                    this.bonusesApplied = true;
+                    }
+                }.bind(this));
+                
+                return promises.length ? Promise.all(promises) : Promise.resolve();
+            },
+            _checkRequirements: function(upgrade) {
+                return !upgrade || upgrade.requirements.every(function(req) {
+                    var lhs, slots;
+                    console.log(req.prop);
+                    switch(req.prop) {
+                        case 'skill':
+                            lhs = this.pilot.pilot.skill;
+                            break;
+                        case 'upgrade_slots':
+                            lhs = this.slots.map(function(slot) {
+                                return slot.id;
+                            });
+                            break;
+                        case 'actions':
+                            lhs = this.pilot.pilot.ship.actions.map(function(action) {
+                                return action.id;
+                            });
+                            break;
+                        case 'upgrades':
+                            lhs = this.slots.map(function(slot) {
+                                return slot.upgrade ? slot.upgrade.id : undefined;
+                            }).filter(function(upgrade) {
+                                return !!upgrade;
+                            });
+                            break;
+                        case 'unique':
+                            slots = this.slots.filter(function(slot) {
+                                return slot.id === req.value;
+                            }).filter(function(slot) {
+                                return !!slot.upgrade;
+                            }).map(function(slot) {
+                                return slot.upgrade.id;
+                            }).sort();
+                            console.log(slots);
+                            return slots.every(function(id, index) {
+                                return id !== slots[index + 1];
+                            });
+                            break;
+                        default: 
+                            return true;
+                    }
+                    ret = this._evalOperator(lhs, req.value, req.operator);
+                    if (!ret) console.log(upgrade.name + ': ' + lhs + req.operator + req.value);
+                    return ret;
+                }.bind(this));
+            },
+            _checkLimited: function(upgrade) {
+                ret = !upgrade || !upgrade.limited || this.slots.filter(function(slot) {
+                    return slot.upgrade && slot.upgrade.canonical === upgrade.canonical;
+                }).length === 1;
+                if (!ret) console.log(upgrade.name + ': limited');
+                return ret;
+            },
+            _checkRequiredSlots: function(upgrade) {
+                ret = !upgrade || this.slots.filter(function(slot) {
+                    return slot.id === upgrade.type && !slot.upgrade;
+                }).length >= upgrade.required_slots - 1;
+                if (!ret) console.log(upgrade.name + ': required slots');
+                return ret;
+            },
+            _checkUnique: function(upgrade) {
+                var count = 0;
+                if (!upgrade || !upgrade.unique) return true;
+                
+                Array.prototype.forEach.call(this.parentElement.childNodes, function(el) {
+                    count += (el.pilot.pilot.canonical === upgrade.canonical ? 1 : 0);
+                    el.slots.some(function(u) {
+                        count += (u.upgrade && u.upgrade.canonical === upgrade.canonical ? 1 : 0);
+                    });
+                });
+                ret = count === 1;
+                if (!ret) console.log(upgrade.name + ': unique');
+                return ret;
+            },
+            _evalOperator: function(lhs, rhs, operator) {
+                console.log(lhs + operator + rhs);
+                switch (operator) {
+                    case '==':
+                        return lhs == rhs;
+                    case '!=':
+                        return lhs != rhs;
+                    case '>':
+                        return lhs > rhs;
+                    case '<':
+                        return lhs < rhs;
+                    case '<=':
+                        return lhs <= rhs;
+                    case '>=':
+                        return lhs >= rhs;
+                    case '[]':
+                        return lhs.indexOf(rhs) !== -1;
+                    case '![]':
+                        return lhs.indexOf(rhs) === -1;
                 }
             },
+            _initBonuses: function() {
+                this.bonuses = {
+                    slots: [],
+                    actions: [],
+                    skill: 0,
+                    attack: 0,
+                    agility: 0,
+                    hull: 0,
+                    shield: 0
+                };
+            },
             _processPilot: function() {
-                var slots = this.pilot.pilot.slots.map(function(slot) {
-                    return {
-                        id: slot.id,
-                        name: slot.name,
-                        canonical: slot.canonical,
-                        order: slot.order
-                    };
-                });
-                this.pilot.upgrades.forEach(function(upgrade) {
-                    slots.filter(function(slot) {
-                        return slot.id === upgrade.type;
-                    }).some(function(slot) {
-                        if (!slot.upgrade) {
+                this._applyBonuses().then(function() {
+                    var slots = this.pilot.pilot.slots.concat(this.bonuses.slots).map(function(slot) {
+                        return {
+                            id: slot.id,
+                            name: slot.name,
+                            canonical: slot.canonical,
+                            order: slot.order
+                        };
+                    }).sort(this._sortSlots),
+                    hiddenSlots = [],
+                    orphanedUpgrades = [];
+                    this.pilot.upgrades.forEach(function(spUpgrade) {
+                        var upgrade = spUpgrade.upgrade,
+                            slot = slots[spUpgrade.index];
+                        if (slot && upgrade && slot.id === upgrade.type) {
+                            slot.bonuses = spUpgrade.bonuses;
                             slot.upgrade = upgrade;
-                            return true;
-                        } else {
-                            return false;
+                            for (var i = 0; i < upgrade.required_slots - 1; i++) {
+                                hiddenSlots.push(upgrade.type);
+                            }
+                        } else if (upgrade) {
+                            orphanedUpgrades.push(spUpgrade);
+                        }
+                    }.bind(this));
+                    hiddenSlots.forEach(function(upgradeType) {
+                        var slot = slots.filter(function(slot) {
+                            return slot.id === upgradeType && !slot.upgrade;
+                        })[0];
+                        if (slot) {
+                            slot.hide = true;
                         }
                     });
+                    orphanedUpgrades.forEach(function(spUpgrade) {
+                        upgrade = spUpgrade.upgrade;
+                        slot = slots.filter(function(slot) {
+                            return slot.id === upgrade.type && !slot.upgrade && !slot.hide;
+                        })[0];
+                        if(slot) {
+                            slot.upgrade = upgrade;
+                            slot.bonuses = spUpgrade.bonuses;
+                        }
+                    });
+                    this.slots = slots;
+                    this.$.actionbar.actions = this.pilot.pilot.ship.actions.concat(this.bonuses.actions);
+                    this.fire('update');
                 }.bind(this));
-                this.slots = slots;
-                
-                this._applyBonuses();
+            },
+            _remove: function() {
+                this.fire('remove');
             },
             _sortSlots: function(a, b) {
                 return a.order - b.order;
+            },
+            _updateUpgrades: function(el) {
+                if (this.slots.every(function(slot) { 
+                    return this._checkRequirements(slot.upgrade) 
+                        && this._checkRequiredSlots(slot.upgrade)
+                        && this._checkLimited(slot.upgrade)
+                        && this._checkUnique(slot.upgrade);
+                }.bind(this))) {
+                    this.slots.forEach(function(slot, index) {
+                        var spUpgrade = this.pilot.upgrades.filter(function(spUpgrade) {
+                            return spUpgrade.index === index;
+                        })[0];
+                        
+                        if (spUpgrade) {
+                            spUpgrade.upgrade = slot.upgrade;
+                        } else {
+                            this.pilot.upgrades.push({
+                                pilot: this.pilot.id,
+                                upgrade: slot.upgrade,
+                                index: index
+                            });
+                        }
+                    }.bind(this));
+                    
+                    this._processPilot();
+                } else {
+                    el.srcElement.slot.upgrade = undefined;
+                    el.srcElement._updateSlot();
+                }
+                
+                this.fire('update');
             }
         });
     })();

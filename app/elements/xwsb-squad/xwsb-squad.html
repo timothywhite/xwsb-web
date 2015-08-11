@@ -5,14 +5,47 @@
 <dom-module id="xwsb-squad">
 
 <style>
-
+    #container {
+    }
+    #wrap {
+        height: calc(100% - 64px);
+        overflow: auto;
+    }
+    .toolbar {
+        height: 44px;
+        width: 100%;
+        background-color: var(--primary-background-color);
+        padding: 10px 40px 10px 10px;
+        display: flex;
+    }
+    .title {
+        font-size: 24px;
+        padding: 8px 0 0 10px;
+        display: inline-block;
+    }
+    .points {
+        text-align: right;
+        font-size: 24px;
+        display: inline-block;
+        margin: 7px 30px 0 0;
+        width: 40px;
+    }
+    .spacer {
+        max-width:425px;
+    }
 </style>
 
 <template>
-
-    <xwsb-api id="api"></xwsb-api>
     
-    <div id="container"></div>
+    <div class="toolbar">
+        <div class="title">{{name}}</div>
+        <span class="flex spacer"></span>
+        <div id="points" class="points">{{points}}</div>
+    </div>
+    <xwsb-api id="api"></xwsb-api>
+    <div id="wrap">
+        <div id="container"></div>
+    </div>
     
 </template>
 <script>
@@ -23,53 +56,91 @@
                 id: {
                     type: Number,
                     notify: true,
-                    observer: '_idChanged',
-                    value: 1
+                    observer: '_idChanged'
                 },
                 name: {
                     type: String,
-                    notify: true
-                },
-                pilots: {
-                    type: Array,
                     notify: true,
-                    value: []
+                    value: 'Unnamed Squad'
                 },
-                faction: {
-                    type: Number,
-                    notify: true
+                points: {
+                    type: Number
                 }
-                
-            },
-            ready: function() {
                 
             },
             addPilot: function(pilot) {
-                this.pilots = this.pilots.concat([pilot]);
+                if (pilot.unique && !this._isUnique(pilot)) {
+                    //TODO: raise error or something
+                    console.log('not unique!');
+                } else {
+                    this._addPilot({
+                        pilot: pilot,
+                        upgrades: []
+                    });
+                }
+            },
+            clear: function() {
+                while (this.$.container.firstChild) {
+                    Polymer.dom(this.$.container).removeChild(this.$.container.firstChild);
+                }
+                this.id = undefined;
+                this.name = 'Unnamed Squad';
+                this.points = 0;
+            },
+            _addPilot: function(pilot) {
+                var squadPilot = document.createElement('xwsb-squad-pilot');
+                squadPilot.pilot = pilot;
+                Polymer.dom(this.$.container).appendChild(squadPilot);
+                squadPilot.addEventListener('update', this._updatePoints.bind(this));
+                squadPilot.addEventListener('remove', function() {
+                    squadPilot.remove();
+                    this._updatePoints();
+                }.bind(this));
+                this._updatePoints();
             },
             _idChanged: function() {
-                if (!this._loading) {
+                if (!this._loading && this.id) {
                     this._loading = true;
                     
                     this.$.api.getSquad(this.id).then(function(data) {
-                        //clear xwsb-squad-pilots
-                        while (this.$.container.firstChild) {
-                            Polymer.dom(this.$.container).removeChild(this.$.container.firstChild);
-                        }
+                        this.clear();
                         //add pilots from data.response.pilots
-                        data.response.pilots.forEach(function(pilot) {
-                            var squadPilot = document.createElement('xwsb-squad-pilot');
-                            squadPilot.pilot = pilot;
-                            Polymer.dom(this.$.container).appendChild(squadPilot);
+                        data.pilots.forEach(function(pilot) {
+                            this._addPilot(pilot);
                         }.bind(this));
-                        this._loading = false;                
+                        
+                        this.name = data.name;
+                        this.id = data.id;
+                        this._updatePoints();
+                        
+                        this._loading = false;
                     }.bind(this));
                 }
             },
+            _isUnique: function(obj) {
+                return !Array.prototype.some.call(this.$.container.childNodes, function(el) {
+                    return el.pilot.pilot.canonical === obj.canonical || el.pilot.upgrades.some(function(upgrade) {
+                        return upgrade.upgrade && upgrade.upgrade.canonical === obj.canonical;
+                    });
+                });
+            },
             _setId: function(el, data) {
-                this.id = data.reponse.id;
                 this._loading = false;
-            }
+                this.id = data.id;
+            },
+            _updatePoints: function(pilot) {
+                this.points = Array.prototype.reduce.call(this.$.container.childNodes, function(p, slot) {
+                    pilot = slot.pilot;
+                    return p + pilot.pilot.points + pilot.upgrades.reduce(function(p, upgrade) {
+                        p += upgrade.upgrade ? upgrade.upgrade.points : 0;
+                        if (upgrade.bonuses && upgrade.bonuses.points) {
+                            p = Math.max(p + upgrade.bonuses.points, 0);
+                        }
+                        return p;
+                    }, 0);
+                }, 0);
+                this.$.points.hidden = this.points === 0;
+            },
         });
     })();
 </script>

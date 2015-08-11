@@ -1,9 +1,16 @@
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+
+<link rel="import" href="../xwsb-api/xwsb-api.html">
 <link rel="import" href="../xwsb-icon/xwsb-icon.html">
+
+<link rel="import" href="xwsb-upgrade-item.html">
 
 <dom-module id="xwsb-upgrade-slot">
 
 <style>
-    div {
+    #container {
         display: inline-block;
         border: 1px solid var(--divider-color);
         background-color: var(--primary-background-color);
@@ -12,22 +19,80 @@
         width: 256px;
         font-weight: bold;
     }
-    div.empty {
+    #container.empty {
         color: var(--dark-primary-color);
         font-weight: normal;
     }
+    .flex-wrap {
+        display: flex;
+    }
+    .name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .empty [icon="close"] {
+        display: none;
+    }
     xwsb-icon {
         font-weight: normal;
+        margin-right: 5px;
+    }
+    paper-dialog {
+        height: 400px;
+        min-height: 400px;
+        max-height: 400px;
+        min-width: 300px;
+    }
+    paper-dialog .scrollable {
+        height: 300px;
+        min-height: 300px;
+        max-height: 300px;
+        overflow: auto;
+    }
+    paper-item {
+        border-bottom: 1px solid var(--divider-color);
+    }
+    #dialog [icon="close"] {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        margin-top: 0px;
+        padding: 0;
+    }
+    .points::before {
+        content: "(";
+        margin-left: 5px;
+    }
+    .points::after {
+        content: ")";
+        margin-right: 5px;
     }
 </style>
 
 <template>
     
-    <div id="container">
-        <xwsb-icon icon="{{slot.canonical}}"></xwsb-icon>
-        <template is="dom-if" if="{{slot.upgrade}}">{{slot.upgrade.name}}</template>
-        <template is="dom-if" if="{{!slot.upgrade}}">{{slot.name}}</template>
+    <xwsb-api id="api"></xwsb-api>
+    
+    <div id="container" on-tap="_showDialog">
+        <div class="flex-wrap">
+            <xwsb-icon icon="{{slot.canonical}}"></xwsb-icon>
+            <span class="name">{{name}}</span>
+            <span id="points" class="points">{{points}}</span>
+            <span class="flex"></span>
+            <iron-icon icon="close" on-tap="_removeUpgrade"></iron-icon>
+        </div>
     </div>
+    
+    <paper-dialog id="dialog" modal>
+        <h4>Choose an Upgrade</h4>
+        <div class="scrollable">
+            <template is="dom-repeat" items="{{upgrades}}" as="upgrade" sort="_sortUpgrades">
+                <xwsb-upgrade-item upgrade="{{upgrade}}" on-tap="_changeUpgrade"></xwsb-upgrade-item>
+            </template>
+        </div>
+        <iron-icon icon="close" dialog-dismiss></iron-icon>
+    </paper-dialog>
     
 </template>
 <script>
@@ -39,34 +104,84 @@
                     type: Object,
                     notify: true,
                     observer: '_updateSlot'
-                }
+                },
+                pilot: {
+                    type: Object,
+                    observer:'_updatePilot'
+                },
+                upgrades: {
+                    type: Array
+                },
+                name: String,
+                hide: {
+                    type: Boolean,
+                    notify: true,
+                    observer: '_hideSlot'
+                },
+                points: Number
+                
             },
+            observers: [
+                '_updateSlot(slot.upgrade)'
+            ],
             ready: function() {
                 
             },
-            _slotMap: function(slot) {
-                return {
-                    1: 'elite',
-                    2: 'modification',
-                    3: 'title',
-                    4: 'astromech',
-                    5: 'bomb',
-                    6: 'cannon',
-                    7: 'crew',
-                    8: 'illicit',
-                    9: 'missile',
-                    10: 'salvagedastromech',
-                    11: 'system',
-                    12: 'torpedo',
-                    13: 'turret'
-                }[slot.id];
+            _points: function() {
+                var points = 0;
+                if (this.slot.upgrade) {
+                    points = this.slot.upgrade.points;
+                    if (this.slot.bonuses && this.slot.bonuses.points) {
+                        points = Math.max(points + this.slot.bonuses.points, 0);
+                    }
+                }
+                return points
+            },
+            _changeUpgrade: function(el) {
+                this.$.dialog.close();
+                this.slot.upgrade = el.srcElement.upgrade;
+                this._updateSlot();
+                this.fire('update');
+            },
+            _getUpgrades: function() {
+                this.$.api.getUpgrades({
+                    type: this.slot.id,
+                    faction: this.pilot.faction.id,
+                    ship: this.pilot.ship.id,
+                    base: this.pilot.ship.base
+                }).then(function(data) {
+                    this.upgrades = data;
+                }.bind(this));
+            },
+            _hideSlot: function() {
+                this.$.container.hidden = this.hide;
+            },
+            _removeUpgrade: function(evt) {
+                this.slot.upgrade = undefined;
+                this._updateSlot();
+                this.fire('update');
+                evt.stopPropagation();
+            },
+            _showDialog: function() {
+                this.$.dialog.open();
+            },
+            _sortUpgrades: function(a, b) {
+                return a.points - b.points;
+            },
+            _updatePilot: function() {
+                this._getUpgrades();
             },
             _updateSlot: function() {
                 if (this.slot.upgrade) {
                     this.$.container.classList.remove('empty');
+                    this.name = this.slot.upgrade.name;
                 } else {
                     this.$.container.classList.add('empty');
+                    this.name = this.slot.name;
                 }
+                if(this.pilot) this._getUpgrades();
+                this.points = this._points();
+                this.$.points.hidden = !this.slot.upgrade;
             }
         });
     })();

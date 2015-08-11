@@ -33,39 +33,19 @@
 
 <template>
 	  
-	  <span class="skill">{{pilot.skill}}</span>
+	  <span class="skill">{{skill}}</span>
 	  
    <xwsb-icon class="attack" icon="attack"></xwsb-icon>
-	  <template is="dom-if" if="{{pilot.attack}}">
-	      <span class="attack">{{pilot.attack}}</span>
-	  </template>
-	  <template is="dom-if" if="{{!pilot.attack}}">
-	      <span class="attack">{{ship.attack}}</span>
-	  </template>
+   <span class="attack">{{attack}}</span>
 	  
 	  <xwsb-icon class="agility" icon="agility"></xwsb-icon>
-   <template is="dom-if" if="{{pilot.agility}}">
-	      <span class="agility">{{pilot.agility}}</span>
-	  </template>
-	  <template is="dom-if" if="{{!pilot.agility}}">
-	      <span class="agility">{{ship.agility}}</span>
-	  </template>
+   <span class="agility">{{agility}}</span>
 	   
 	  <xwsb-icon class="hull" icon="hull"></xwsb-icon>
-	  <template is="dom-if" if="{{pilot.hull}}">
-	      <span class="hull">{{pilot.hull}}</span>
-	  </template>
-	  <template is="dom-if" if="{{!pilot.hull}}">
-	      <span class="hull">{{ship.hull}}</span>
-	  </template>
+   <span class="hull">{{hull}}</span>
 	  
 	  <xwsb-icon class="shield" icon="shield"></xwsb-icon>
-	  <template is="dom-if" if="{{pilot.shield}}">
-	      <span class="shield">{{pilot.shield}}</span>
-	  </template>
-	  <template is="dom-if" if="{{!pilot.shield}}">
-	      <span class="shield">{{ship.shield}}</span>
-	  </template>
+   <span class="shield">{{shield}}</span>
 	  
 </template>
 	
@@ -76,15 +56,51 @@
             properties: {
                 pilot: {
                     type: Object,
-                    notify: true
+                    observer: '_calculateStats'
                 },
                 ship: {
                     type: Object,
-                    notify: true
+                    observer: '_calculateStats'
+                },
+                bonuses: {
+                    type: Object,
+                    observer: '_calculateStats'
+                },
+                skill: {
+                    type: Number,
+                    value: 0
+                },
+                attack: {
+                    type: Number,
+                    value: 0
+                },
+                agility: {
+                    type: Number,
+                    value: 0
+                },
+                hull: {
+                    type: Number,
+                    value: 0
+                },
+                shield: {
+                    type: Number,
+                    value: 0
                 }
             },
+            observers: [
+                '_calculateStats(bonuses.skill, bonuses.attack, bonuses.agility, bonuses.hull, bonuses.shield)'
+            ],
             ready: function() {
                 
+            },
+            _calculateStats: function() {
+                if (this.pilot && this.ship) {
+                    this.skill = this.pilot.skill + (this.bonuses ? this.bonuses.skill : 0);
+                    this.attack = (this.pilot.attack ? this.pilot.attack : this.ship.attack) + (this.bonuses ? this.bonuses.attack : 0);
+                    this.agility = (this.pilot.agility ? this.pilot.agility : this.ship.agility) + (this.bonuses ? this.bonuses.agility : 0);
+                    this.hull = (this.pilot.hull ? this.pilot.hull : this.ship.hull) + (this.bonuses ? this.bonuses.hull : 0);
+                    this.shield = (this.pilot.shield ? this.pilot.shield : this.ship.shield) + (this.bonuses ? this.bonuses.shield : 0);
+                }
             }
         });
     })();
