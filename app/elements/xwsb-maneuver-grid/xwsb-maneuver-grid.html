@@ -1,0 +1,109 @@
+
+<link rel="import" href="xwsb-maneuver.html">
+
+<dom-module id="xwsb-maneuver-grid">
+
+<style>
+    .container {
+        display: inline-block;
+        padding: 10px 0;
+        background-color: var(--default-primary-color);
+        border: 1px solid var(--divider-color);
+    }
+    .column {
+        width: 14%;
+        margin-top: 5px;
+    }
+    .speed {
+        text-align: center;
+        display: inline-block;
+        font-size: 1.25em;
+    }
+    xwsb-maneuver {
+        display: inline-block;
+    }
+    .spacer {
+        display: inline-block;
+    }
+</style>
+
+<template>
+    <div id="container" class="container"></div>
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-maneuver-grid',
+            properties: {
+                maneuvers: {
+                    type: Array,
+                    notify: true,
+                    observer: '_maneuversChanged'
+                }
+            },
+            ready: function() {
+            
+            },
+            _addManeuver: function(maneuver) {
+                var el = document.createElement('xwsb-maneuver');
+                this.$.container.appendChild(el);
+                el.classList.add('column');
+                el.maneuver = maneuver;
+            },
+            _addSpacer: function() {
+                var el = document.createElement('div');
+                el.classList.add('spacer','column');
+                this.$.container.appendChild(el);
+            },
+            _hashManeuver: function(maneuver) {
+                return (maneuver.maneuver.direction ? maneuver.maneuver.direction : '') + maneuver.maneuver.angle;
+            },
+            _maneuversChanged: function() {
+                var maneuvers = this.maneuvers.sort(this._sortManeuvers.bind(this)),
+                    index = 0,
+                    speeds = [5,4,3,2,1,0],
+                    maneuverOrder = [['LFTTRN'], ['LFTBNK'], ['STR'], ['RHTBNK'],['RHTTRN'], ['KTN', 'SLP']],
+                    el;
+                
+                this.$.container.innerHTML = '';
+                
+                speeds.forEach(function(speed) {
+                    el = document.createElement('div');
+                    el.innerText = '' + speed;
+                    el.classList.add('speed', 'column');
+                    this.$.container.appendChild(el);
+                    maneuverOrder.forEach(function(hash) {
+                        if (maneuvers[index]) {
+                            if (hash.indexOf(this._hashManeuver(maneuvers[index])) !== -1 && maneuvers[index].maneuver.speed === speed) {
+                                this._addManeuver(maneuvers[index]);
+                                index++;
+                            } else {
+                                this._addSpacer();
+                            }
+                        } else {
+                            this._addSpacer();
+                        }
+                    }.bind(this));
+                }.bind(this));
+            },
+            _sortManeuvers: function(a, b) {
+                var maneuverPriority = {
+                        'LFTTRN': 1,
+                        'LFTBNK': 2,
+                        'STR'   : 3,
+                        'RHTBNK': 4,
+                        'RHTTRN': 5,
+                        'KTN'   : 6,
+                        'SLP'   : 7
+                    };
+                if (a.maneuver.speed !== b.maneuver.speed) {
+                    return b.maneuver.speed - a.maneuver.speed;
+                } else {
+                    return maneuverPriority[this._hashManeuver(a)] - maneuverPriority[this._hashManeuver(b)];
+                }
+            }
+        });
+    })();
+</script>
+
+</dom-module>

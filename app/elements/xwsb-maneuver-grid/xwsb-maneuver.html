@@ -1,0 +1,63 @@
+
+<link rel="import" href="../xwsb-icon/xwsb-icon.html">
+
+<dom-module id="xwsb-maneuver">
+
+<style>
+:host {
+    text-align: center;
+}
+xwsb-icon {
+    -webkit-text-stroke: 1px black;
+}
+[icon="kturn"] {
+   margin-left: 25px;
+}
+</style>
+
+<template>
+    <xwsb-icon id="icon"></xwsb-icon> 
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-maneuver',
+            properties: {
+                maneuver: {
+                    type: Object,
+                    notify: true,
+                    observer: '_maneuverChanged'
+                }
+            },
+            ready: function() {
+                
+            },
+            _maneuverChanged: function() {
+                var icon = '';
+                
+                if (this.maneuver.maneuver.speed === 0) {
+                    icon = 'stop';
+                } else { 
+                    icon = {
+                        'TRN': 'turn',
+                        'BNK': 'bank',
+                        'STR': 'straight',
+                        'KTN': 'kturn',
+                        'SLP': 'sloopright'
+                    }[this.maneuver.maneuver.angle];
+                     
+                    if (this.maneuver.maneuver.direction) {
+                        icon = icon + {
+                             'LFT': 'left',
+                             'RHT': 'right'
+                         }[this.maneuver.maneuver.direction];
+                     }
+                }
+                this.$.icon.icon = icon; //heh
+                this.$.icon.color = {'R': 'red', 'W': 'white', 'G': 'green'}[this.maneuver.color];
+                
+            }
+        });
+    })();
+</script>
+</dom-module>

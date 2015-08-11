@@ -1,0 +1,34 @@
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<dom-module id="xwsb-upgrade-item">
+
+<style>
+
+</style>
+
+<template>
+    
+    <paper-item>
+        <span>{{upgrade.name}}</span>
+        <span class="flex"></span>
+        <span>{{upgrade.points}}</span>
+    </paper-item>
+    
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-upgrade-item',
+            properties: {
+                upgrade: {
+                    type: Object
+                }
+            },
+            ready: function() {
+                
+            }
+        });
+    })();
+</script>
+
+</dom-module>
