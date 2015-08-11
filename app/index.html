@@ -50,8 +50,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
   <!-- endbuild -->
   <script>
-  	window.Polymer = window.Polymer || {};
-	window.Polymer.dom = 'shadow';
+      	window.Polymer = window.Polymer || {};
+	     window.Polymer.dom = 'shadow';
   </script>
   <!-- will be replaced with elements/elements.vulcanized.html -->
   <link rel="import" href="elements/elements.html">
@@ -64,7 +64,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <paper-drawer-panel id="paperDrawerPanel" disable-swipe drawer-width="285px">
       <!-- Drawer Scroll Header Panel -->
-      <paper-scroll-header-panel drawer fixed>
+      <paper-scroll-header-panel id="sidebar" drawer fixed>
 
         <!-- Drawer Toolbar -->
         <paper-toolbar id="drawerToolbar">
@@ -74,7 +74,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </paper-toolbar>
 
         <!-- Drawer Content -->
-        <xwsb-pilot-list></xwsb-pilot-list>
+        <xwsb-pilot-list faction="{{faction}}"></xwsb-pilot-list>
       </paper-scroll-header-panel>
 
       <!-- Main Area -->
@@ -86,7 +86,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <span class="flex"></span>
 
           <!-- Toolbar icons -->
-          <paper-icon-button icon="refresh"></paper-icon-button>
+          <a href="/"><paper-icon-button icon="refresh"></paper-icon-button></a>
           <paper-icon-button icon="search"></paper-icon-button>
 
           <!-- Application name -->
@@ -96,10 +96,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </paper-toolbar>
 
         <!-- Main Content -->
-        <div class="content">
-            <xwsb-squad></xwsb-squad>
-        </div>
-      </paper-scroll-header-panel>
+        <iron-pages attr-for-selected="data-route" selected="{{route}}">
+            <div data-route="squad">
+                <xwsb-squad></xwsb-squad>
+            </div>
+            <div data-route="new">
+                <paper-material class="choose-faction">
+                    <h4>Choose a faction to begin:</h4>
+                    <a href="/new/rebels" class="faction-link"><xwsb-icon icon="rebels"></xwsb-icon></a>
+                    <a href="/new/empire" class="faction-link"><xwsb-icon icon="empire"></xwsb-icon></a>
+                    <a href="/new/scum" class="faction-link"><xwsb-icon icon="scum"></xwsb-icon></a>
+                </paper-material>
+            </div>
+        </iron-pages>
+      </paper-header-panel>
     </paper-drawer-panel>
   </template>
 
