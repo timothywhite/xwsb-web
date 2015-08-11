@@ -7,6 +7,8 @@
 </template>
 <script>
     (function () {
+        var _cache = {};
+	var _promises = {};
         Polymer({
             is: 'xwsb-api',
             properties: {
@@ -33,32 +35,118 @@
                 }
                 return url;
             },
-            _get(type, URLParams, queryParams) {
-                this.$.ajax.url = this._buildURL(type, URLParams);
-                this.$.ajax.method = 'GET';
-                this.$.ajax.params = queryParams ? queryParams : {};
-                return this.$.ajax.generateRequest().completes; 
+            _filterObj: function(obj, filter) {
+                return filter ? Object.keys(filter).reduce(function(p, field) {
+                    var match;
+                    
+                    if (obj.hasOwnProperty(field)) {
+                        if (obj[field] === null) {
+                            match = true;
+                        } else if (Number.isInteger(obj[field])) {
+                            match = obj[field] === filter[field];
+                        } else {
+                            match = obj[field].id === filter[field];
+                        }
+                    } else if (obj.hasOwnProperty('requirements')) {
+                        match = obj.requirements.reduce(function(p, req) {
+                            if (req.prop === field) {
+                                var test = Number.isInteger(filter[field]) ? req.value === filter[field] : req.value === filter[field].id;
+                                if (req.required) {
+                                    return p && test;
+                                } else {
+                                    return p || test;
+                                }
+                            } else {
+                                return p;
+                            }
+                        }, true && obj.requirements.filter(function(req) {
+                            return req.prop === field;
+                        }).length <= 1);
+                    } else {
+                        match = false;
+                    }
+                    
+                    return p && match;
+                }, true) : true;
+            },
+            _get: function(type, filter, bypass) {
+                return new Promise(function (resolve, reject) {
+                    if ((!_cache[type] && !_promises[type]) || bypass) {
+                        this.$.ajax.url = this._buildURL(type);
+                        this.$.ajax.method = 'GET';
+                        _promises[type] = new Promise(function(resolve, reject) {
+                            this.$.ajax.generateRequest().completes.then(function(data) {
+                                _cache[type] = data.response;
+                                resolve();
+                            }.bind(this)); 
+                        }.bind(this));
+                    }
+                    _promises[type].then(function() {
+                        resolve(_cache[type].filter(function(obj) {
+                            return this._filterObj(obj, filter);
+                        }.bind(this)));
+                    }.bind(this));
+                }.bind(this));
             },
             getAction: function(id) {
-                return this._get('action', id);
+                return new Promise(function(resolve, reject) {
+                    this._get('action', {
+                        id: id
+                    }).then(function(data) {
+                        resolve(data[0]);
+                    });
+                }.bind(this));
             },
             getActions: function() {
                 return this._get('action');
             },
+            getShip: function(id) {
+                return new Promise(function(resolve, reject) {
+                    this._get('ship', {
+                        id: id
+                    }).then(function(data) {
+                        resolve(data[0]);
+                    });
+                }.bind(this));
+            },
             getShips: function(filter) {
-                return this._get('ship', null, filter);
+                return this._get('ship', filter);
             },
             getSquad: function(id) {
-                return this._get('squad', id);
+                return new Promise(function(resolve, reject) {
+                    this._get('squad', {
+                        id: id
+                    }).then(function(data) {
+                        resolve(data[0]);
+                    });
+                }.bind(this));
             },
             getSquads: function(filter) {
-                return this._get('squad', null, filter);
+                return this._get('squad', filter, true);
+            },
+            getUpgrade: function(id) {
+                return new Promise(function(resolve, reject) {
+                    this._get('upgrade', {
+                        id: id
+                    }).then(function(data) {
+                        resolve(data[0]);
+                    });
+                }.bind(this));
+            },
+            getUpgrades: function(filter) {
+                return this._get('upgrade', filter);
             },
             getUpgradeType: function(id) {
-                return this._get('upgrade/type', id);
+                return new Promise(function(resolve, reject) {
+                    this._get('upgrade/type', {
+                        id: id
+                    }).then(function(data) {
+                        resolve(data[0]);
+                    });
+                }.bind(this));
             },
             getUpgradeTypes: function(filter) {
-                return this._get('upgrade/type', null, filter);
+                return this._get('upgrade/type', filter);
             }
         });
     })();
