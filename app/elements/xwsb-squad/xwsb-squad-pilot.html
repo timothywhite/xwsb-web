@@ -97,7 +97,9 @@
                                             this.$.api.getUpgradeType(bonus.value).then(function(data) {
                                                 this._addUpgradeSlot(data);
                                                 resolve();
-                                            }.bind(this));
+                                            }.bind(this)).catch(function() {
+                                                reject();
+                                            });
                                         }.bind(this)));
                                         break;
                                     case 'actions':
@@ -105,7 +107,9 @@
                                             this.$.api.getAction(bonus.value).then(function(data) {
                                                 this._addAction(data);
                                                 resolve();
-                                            }.bind(this));
+                                            }.bind(this)).catch(function() {
+                                                reject();
+                                            });
                                         }.bind(this)));
                                         break;
                                     case 'points':
@@ -129,7 +133,7 @@
             },
             _checkRequirements: function(upgrade) {
                 return !upgrade || upgrade.requirements.every(function(req) {
-                    var lhs, slots;
+                    var lhs, slots, ret;
                     console.log(req.prop);
                     switch(req.prop) {
                         case 'skill':
@@ -164,32 +168,31 @@
                             return slots.every(function(id, index) {
                                 return id !== slots[index + 1];
                             });
-                            break;
                         default: 
                             return true;
                     }
                     ret = this._evalOperator(lhs, req.value, req.operator);
-                    if (!ret) console.log(upgrade.name + ': ' + lhs + req.operator + req.value);
+                    if (!ret) { console.log(upgrade.name + ': ' + lhs + req.operator + req.value); }
                     return ret;
                 }.bind(this));
             },
             _checkLimited: function(upgrade) {
-                ret = !upgrade || !upgrade.limited || this.slots.filter(function(slot) {
+                var ret = !upgrade || !upgrade.limited || this.slots.filter(function(slot) {
                     return slot.upgrade && slot.upgrade.canonical === upgrade.canonical;
                 }).length === 1;
-                if (!ret) console.log(upgrade.name + ': limited');
+                if (!ret) { console.log(upgrade.name + ': limited'); }
                 return ret;
             },
             _checkRequiredSlots: function(upgrade) {
-                ret = !upgrade || this.slots.filter(function(slot) {
+                var ret = !upgrade || this.slots.filter(function(slot) {
                     return slot.id === upgrade.type && !slot.upgrade;
                 }).length >= upgrade.required_slots - 1;
-                if (!ret) console.log(upgrade.name + ': required slots');
+                if (!ret){ console.log(upgrade.name + ': required slots'); }
                 return ret;
             },
             _checkUnique: function(upgrade) {
-                var count = 0;
-                if (!upgrade || !upgrade.unique) return true;
+                var count = 0, ret;
+                if (!upgrade || !upgrade.unique) { return true; }
                 
                 Array.prototype.forEach.call(this.parentElement.childNodes, function(el) {
                     count += (el.pilot.pilot.canonical === upgrade.canonical ? 1 : 0);
@@ -198,16 +201,16 @@
                     });
                 });
                 ret = count === 1;
-                if (!ret) console.log(upgrade.name + ': unique');
+                if (!ret) { console.log(upgrade.name + ': unique'); }
                 return ret;
             },
             _evalOperator: function(lhs, rhs, operator) {
                 console.log(lhs + operator + rhs);
                 switch (operator) {
                     case '==':
-                        return lhs == rhs;
+                        return lhs === rhs;
                     case '!=':
-                        return lhs != rhs;
+                        return lhs !== rhs;
                     case '>':
                         return lhs > rhs;
                     case '<':
@@ -267,10 +270,10 @@
                         }
                     });
                     orphanedUpgrades.forEach(function(spUpgrade) {
-                        upgrade = spUpgrade.upgrade;
-                        slot = slots.filter(function(slot) {
-                            return slot.id === upgrade.type && !slot.upgrade && !slot.hide;
-                        })[0];
+                        var upgrade = spUpgrade.upgrade,
+                            slot = slots.filter(function(slot) {
+                                return slot.id === upgrade.type && !slot.upgrade && !slot.hide;
+                            })[0];
                         if(slot) {
                             slot.upgrade = upgrade;
                             slot.bonuses = spUpgrade.bonuses;
@@ -289,10 +292,10 @@
             },
             _updateUpgrades: function(el) {
                 if (this.slots.every(function(slot) { 
-                    return this._checkRequirements(slot.upgrade) 
-                        && this._checkRequiredSlots(slot.upgrade)
-                        && this._checkLimited(slot.upgrade)
-                        && this._checkUnique(slot.upgrade);
+                    return this._checkRequirements(slot.upgrade) &&
+                        this._checkRequiredSlots(slot.upgrade) &&
+                        this._checkLimited(slot.upgrade) &&
+                        this._checkUnique(slot.upgrade);
                 }.bind(this))) {
                     this.slots.forEach(function(slot, index) {
                         var spUpgrade = this.pilot.upgrades.filter(function(spUpgrade) {

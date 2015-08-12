@@ -13,11 +13,11 @@
     };
     
     page('/', setRoute('new'));
-    page('/new/:faction', setRoute('squad'), function(ctx, next) {
+    page('/new/:faction', setRoute('squad'), function(ctx) {
         app.faction = ctx.params.faction;
         squad.clear();
     });
-    page('/squad/:id', setRoute('squad'), function(ctx, next) {
+    page('/squad/:id', setRoute('squad'), function(ctx) {
         squad.id = ctx.params.id;
     });
     page({

@@ -8,13 +8,12 @@
     });
 
     window.addEventListener('WebComponentsReady', function() {
-        var app = document.querySelector('#app'),
-            pilotList = document.querySelector('xwsb-pilot-list'),
+        var pilotList = document.querySelector('xwsb-pilot-list'),
             squad = document.querySelector('xwsb-squad');
             
         pilotList.addEventListener('xwsb-pilot-select', function(evt) {
             squad.addPilot(evt.detail.pilot);
-        })
+        });
     });
 
 })(document);

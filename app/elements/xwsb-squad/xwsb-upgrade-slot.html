@@ -135,7 +135,7 @@
                         points = Math.max(points + this.slot.bonuses.points, 0);
                     }
                 }
-                return points
+                return points;
             },
             _changeUpgrade: function(el) {
                 this.$.dialog.close();
@@ -179,7 +179,9 @@
                     this.$.container.classList.add('empty');
                     this.name = this.slot.name;
                 }
-                if(this.pilot) this._getUpgrades();
+                if(this.pilot) {
+                    this._getUpgrades();
+                }
                 this.points = this._points();
                 this.$.points.hidden = !this.slot.upgrade;
             }

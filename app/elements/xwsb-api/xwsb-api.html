@@ -78,14 +78,18 @@
                             this.$.ajax.generateRequest().completes.then(function(data) {
                                 _cache[type] = data.response;
                                 resolve();
-                            }.bind(this)); 
+                            }.bind(this)).catch(function() {
+                                reject();
+                            }); 
                         }.bind(this));
                     }
                     _promises[type].then(function() {
                         resolve(_cache[type].filter(function(obj) {
                             return this._filterObj(obj, filter);
                         }.bind(this)));
-                    }.bind(this));
+                    }.bind(this)).catch(function() {
+                        reject();
+                    });
                 }.bind(this));
             },
             getAction: function(id) {
@@ -94,6 +98,8 @@
                         id: id
                     }).then(function(data) {
                         resolve(data[0]);
+                    }).catch(function() {
+                        reject();
                     });
                 }.bind(this));
             },
@@ -106,6 +112,8 @@
                         id: id
                     }).then(function(data) {
                         resolve(data[0]);
+                    }).catch(function() {
+                        reject();
                     });
                 }.bind(this));
             },
@@ -118,6 +126,8 @@
                         id: id
                     }).then(function(data) {
                         resolve(data[0]);
+                    }).catch(function() {
+                        reject();
                     });
                 }.bind(this));
             },
@@ -130,6 +140,8 @@
                         id: id
                     }).then(function(data) {
                         resolve(data[0]);
+                    }).catch(function() {
+                        reject();
                     });
                 }.bind(this));
             },
@@ -142,6 +154,8 @@
                         id: id
                     }).then(function(data) {
                         resolve(data[0]);
+                    }).catch(function(){
+                        reject();
                     });
                 }.bind(this));
             },
