@@ -3,7 +3,7 @@
 <link rel="import" href="../xwsb-statline/xwsb-statline.html">
 <link rel="import" href="../xwsb-actionbar/xwsb-actionbar.html">
 
-<dom-module id="xwsb-pilot-name">
+<dom-module id="xwsb-card-title">
 
 <style>
     :host {
@@ -12,15 +12,15 @@
 </style>
 
 <template>
-    <template is="dom-if" if="{{pilot.unique}}">&#x2022;</template>
-    <span>{{pilot.name}}</span>
+    <template is="dom-if" if="{{card.unique}}">&#x2022;</template>
+    <span>{{card.name}}</span>
 </template>
 <script>
     (function () {
         Polymer({
-            is: 'xwsb-pilot-name',
+            is: 'xwsb-card-title',
             properties: {
-                pilot: {
+                card: {
                     type: Object,
                     notify: true
                 }

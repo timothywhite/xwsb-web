@@ -1,5 +1,7 @@
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 
+<link rel="import" href="../xwsb-card-title/xwsb-card-title.html">
+
 <dom-module id="xwsb-upgrade-item">
 
 <style>
@@ -9,7 +11,7 @@
 <template>
     
     <paper-item>
-        <span>{{upgrade.name}}</span>
+        <xwsb-card-title card="{{upgrade}}"></xwsb-card-title>
         <span class="flex"></span>
         <span>{{upgrade.points}}</span>
     </paper-item>

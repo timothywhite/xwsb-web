@@ -4,7 +4,7 @@
 
 <link rel="import" href="../xwsb-statline/xwsb-statline.html">
 <link rel="import" href="../xwsb-actionbar/xwsb-actionbar.html">
-<link rel="import" href="../xwsb-pilot-name/xwsb-pilot-name.html">
+<link rel="import" href="../xwsb-card-title/xwsb-card-title.html">
 <link rel="import" href="../xwsb-maneuver-grid/xwsb-maneuver-grid.html">
 <link rel="import" href="../xwsb-card-text/xwsb-card-text.html">
 
@@ -62,7 +62,7 @@
 	  
     <paper-item class="pilot" on-tap="_select">
         <span class="pilot-skill" item-icon>{{pilot.skill}}</span>
-        <xwsb-pilot-name class="pilot-name" pilot="{{pilot}}"></xwsb-pilot-name>
+        <xwsb-card-title class="pilot-name" card="{{pilot}}"></xwsb-card-title>
         <span class="flex"></span>
         <span class="pilot-points">{{pilot.points}}</span>
         <span class="toolbar">
@@ -73,7 +73,7 @@
     <paper-dialog id="dialog" modal>
         
         <h2>
-            <xwsb-pilot-name pilot="{{pilot}}"></xwsb-pilot-name>
+            <xwsb-card-title card="{{pilot}}"></xwsb-card-title>
         </h2>
         <div id="dialogContent">
         </div>
