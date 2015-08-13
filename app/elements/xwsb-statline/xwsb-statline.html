@@ -29,14 +29,24 @@
     .shield {
         color: var(--xwsb-shield-color);
     }
+    .energy {
+        color: var(--xwsb-energy-color);
+    }
 </style>
 
 <template>
 	  
 	  <span class="skill">{{skill}}</span>
 	  
-   <xwsb-icon class="attack" icon="attack"></xwsb-icon>
-   <span class="attack">{{attack}}</span>
+	  <template is="dom-if" if="{{attack}}">
+       <xwsb-icon class="attack" icon="attack"></xwsb-icon>
+       <span class="attack">{{attack}}</span>
+	  </template>
+	  
+	  <template is="dom-if" if="{{energy}}">
+       <xwsb-icon class="energy" icon="energy"></xwsb-icon>
+       <span class="energy">{{energy}}</span>
+	  </template>
 	  
 	  <xwsb-icon class="agility" icon="agility"></xwsb-icon>
    <span class="agility">{{agility}}</span>
@@ -85,10 +95,14 @@
                 shield: {
                     type: Number,
                     value: 0
+                },
+                energy: {
+                    type: Number,
+                    value: 0
                 }
             },
             observers: [
-                '_calculateStats(bonuses.skill, bonuses.attack, bonuses.agility, bonuses.hull, bonuses.shield)'
+                '_calculateStats(bonuses.skill, bonuses.attack, bonuses.agility, bonuses.hull, bonuses.shield, bonuses.energy)'
             ],
             ready: function() {
                 
@@ -96,10 +110,11 @@
             _calculateStats: function() {
                 if (this.pilot && this.ship) {
                     this.skill = this.pilot.skill + (this.bonuses ? this.bonuses.skill : 0);
-                    this.attack = (this.pilot.attack ? this.pilot.attack : this.ship.attack) + (this.bonuses ? this.bonuses.attack : 0);
-                    this.agility = (this.pilot.agility ? this.pilot.agility : this.ship.agility) + (this.bonuses ? this.bonuses.agility : 0);
-                    this.hull = (this.pilot.hull ? this.pilot.hull : this.ship.hull) + (this.bonuses ? this.bonuses.hull : 0);
-                    this.shield = (this.pilot.shield ? this.pilot.shield : this.ship.shield) + (this.bonuses ? this.bonuses.shield : 0);
+                    this.attack = (this.pilot.attack ? this.pilot.attack : this.ship.attack) + (this.bonuses && this.bonuses.attack ? this.bonuses.attack : 0);
+                    this.agility = (this.pilot.agility ? this.pilot.agility : this.ship.agility) + (this.bonuses && this.bonuses.agility ? this.bonuses.agility : 0);
+                    this.hull = (this.pilot.hull ? this.pilot.hull : this.ship.hull) + (this.bonuses && this.bonuses.hull ? this.bonuses.hull : 0);
+                    this.shield = (this.pilot.shield ? this.pilot.shield : this.ship.shield) + (this.bonuses && this.bonuses.shield ? this.bonuses.shield : 0);
+                    this.energy = (this.pilot.energy ? this.pilot.energy : this.ship.energy) + (this.bonuses && this.bonuses.energy ? this.bonuses.energy : 0);
                 }
             }
         });

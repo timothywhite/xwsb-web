@@ -120,6 +120,7 @@
                                     case 'agility':
                                     case 'hull':
                                     case 'shield':
+                                    case 'energy':
                                         this.bonuses[bonus.prop] += bonus.value;
                                         this.$.statline.notifyPath('bonuses.' + bonus.prop, bonus.value);
                                         break;
@@ -233,7 +234,8 @@
                     attack: 0,
                     agility: 0,
                     hull: 0,
-                    shield: 0
+                    shield: 0,
+                    energy: 0
                 };
             },
             _processPilot: function() {
