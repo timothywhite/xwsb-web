@@ -49,8 +49,13 @@
                         }
                     } else if (obj.hasOwnProperty('requirements')) {
                         match = obj.requirements.reduce(function(p, req) {
-                            if (req.prop === field) {
-                                var test = Number.isInteger(filter[field]) ? req.value === filter[field] : req.value === filter[field].id;
+                            var test;
+                            if (req.prop === field && (req.operator === '==' || req.operator === '!=')) {
+                                if (req.operator === '==') {
+                                    test = Number.isInteger(filter[field]) ? req.value === filter[field] : req.value === filter[field].id;
+                                } else {
+                                    test = Number.isInteger(filter[field]) ? req.value !== filter[field] : req.value !== filter[field].id;
+                                }
                                 if (req.required) {
                                     return p && test;
                                 } else {
