@@ -1,11 +1,25 @@
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 
 <link rel="import" href="../xwsb-card-title/xwsb-card-title.html">
 
 <dom-module id="xwsb-upgrade-item">
 
 <style>
-
+    #dialog {
+        max-height: 500px;
+        padding: 20px;
+        min-width: 300px;
+        max-width: 350px;
+    }
+    #dialog [icon="close"] {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        margin-top: 0px;
+        padding: 0;
+    }
 </style>
 
 <template>
@@ -14,7 +28,13 @@
         <xwsb-card-title card="{{upgrade}}"></xwsb-card-title>
         <span class="flex"></span>
         <span>{{upgrade.points}}</span>
+        <iron-icon icon="info-outline" on-tap="_info">
     </paper-item>
+    
+    <paper-dialog id="dialog" on-tap="_tapDialog">
+        <div id="dialogContent"></div>
+        <iron-icon icon="close" dialog-dismiss></iron-icon>
+    </paper-dialog>
     
 </template>
 <script>
@@ -28,6 +48,13 @@
             },
             ready: function() {
                 
+            },
+            _info: function(evt) {
+                this.fire('info');
+                evt.stopPropagation();
+            },
+            _tapDialog: function(evt) {
+                evt.stopPropagation();
             }
         });
     })();

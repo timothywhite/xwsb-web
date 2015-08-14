@@ -7,6 +7,7 @@
 <link rel="import" href="../xwsb-card-title/xwsb-card-title.html">
 <link rel="import" href="../xwsb-maneuver-grid/xwsb-maneuver-grid.html">
 <link rel="import" href="../xwsb-card-text/xwsb-card-text.html">
+<link rel="import" href="../xwsb-card/xwsb-card.html">
 
 <dom-module id="xwsb-pilot-list-pilot">
 
@@ -43,20 +44,6 @@
         margin-top: 0px;
         padding: 0;
     }
-    xwsb-statline {
-        font-size: 18px;
-        margin: 2px 0;
-        min-width: 247px;
-    }
-    xwsb-actionbar {
-        font-size: 19.4px;
-        margin: 2px 0;
-        min-width: 253px
-    }
-    xwsb-card-text::shadow #container {
-        max-width: 300px;
-        padding: 10px 0;
-    }
 </style>
 
 <template>
@@ -72,10 +59,6 @@
     </paper-item>
     
     <paper-dialog id="dialog" modal>
-        
-        <h2>
-            <xwsb-card-title card="{{pilot}}"></xwsb-card-title>
-        </h2>
         <div id="dialogContent">
         </div>
         <iron-icon icon="close" dialog-dismiss></iron-icon>
@@ -98,7 +81,7 @@
                 }
             },
             ready: function() {
-                this.$.dialog.addEventListener('iron-overlay-closed', this._dialogClose.bind(this));
+                
             },
             _select: function() {
                 this.fire('select');
@@ -109,26 +92,12 @@
             },
             _dialogOpen: function() {
                 if (this.$.dialogContent.childElementCount === 0) {
-                    var statline = document.createElement('xwsb-statline'),
-                        actionbar = document.createElement('xwsb-actionbar'),
-                        cardText = document.createElement('xwsb-card-text'),
-                        maneuverGrid = document.createElement('xwsb-maneuver-grid');
-                        
-                    statline.pilot = this.pilot;
-                    statline.ship = this.ship;
-                    actionbar.actions = this.ship.actions;
-                    cardText.text = this.pilot.text;
-                    maneuverGrid.maneuvers = this.ship.maneuvers;
-                    
-                    this.$.dialogContent.appendChild(statline);
-                    this.$.dialogContent.appendChild(actionbar);
-                    this.$.dialogContent.appendChild(cardText);
-                    this.$.dialogContent.appendChild(maneuverGrid);
+                    var card = document.createElement('xwsb-card');
+                    this.pilot.ship = this.ship;
+                    card.card = this.pilot;
+                    this.$.dialogContent.appendChild(card);
                 }
                 this.$.dialog.open();  
-            },
-            _dialogClose: function() {
-                //this.appendChild(this.$.dialog);
             }
         });
     })();

@@ -1,0 +1,137 @@
+<link rel="import" href="../xwsb-statline/xwsb-statline.html">
+<link rel="import" href="../xwsb-actionbar/xwsb-actionbar.html">
+<link rel="import" href="../xwsb-card-text/xwsb-card-text.html">
+<link rel="import" href="../xwsb-card-title/xwsb-card-title.html">
+
+<dom-module id="xwsb-card">
+
+<style>
+    h2 {
+        margin-top: 0px;
+    }
+    xwsb-statline {
+        font-size: 18px;
+        margin: 2px 0;
+        min-width: 247px;
+    }
+    xwsb-actionbar {
+        font-size: 19.4px;
+        margin: 2px 0;
+        min-width: 253px
+    }
+    xwsb-card-text::shadow #container {
+        max-width: 300px;
+        padding: 10px 0;
+    }
+    .points {
+        text-align: right;
+        font-size: 1.5em;
+        margin-top: 10px;
+    }
+    .group:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+    .left {
+        float: left;
+        display: inline-block;
+        width: 74%;
+    }
+    .right {
+        float: left;
+        display: inline-block;
+        width: 24%;
+    }
+    .value {
+        font-size: 24px;
+        text-align: right;
+        margin: 10px 0;
+        font-weight: bold;
+    }
+    .top {
+        margin-top: 0px;
+    }
+    .energy {
+        color: var(--xwsb-energy-color);
+    }
+    .attack {
+        color: var(--xwsb-attack-color);
+    }
+    .attack-top .attack {
+        margin-top: 0px;
+    }
+    .range {
+        
+    }
+</style>
+
+<template>
+    <div class="group">
+        <div id="left" class="left">
+            <h2>
+                <xwsb-card-title card="{{card}}"></xwsb-card-title>
+            </h2>
+            <template is="dom-if" if="{{card.ship}}">
+                <xwsb-statline pilot="{{card}}" ship="{{card.ship}}" bonuses="{{card.bonuses}}"></xwsb-statline>
+                <xwsb-actionbar actions="{{card.ship.actions}}"></xwsb-actionbar>
+            </template>
+            <template is="dom-if" if="{{card.text}}">
+                <xwsb-card-text text="{{card.text}}"></xwsb-card-text>
+            </template>
+        </div>
+        <div id="right" class="right">
+            <template is="dom-if" if="{{bonusEnergy}}">
+                <div class="value energy top">+<span>{{bonusEnergy}}</span></div>
+            </template>
+            <template is="dom-if" if="{{card.energy}}">
+                <div class="value energy top">{{card.energy}}</div>
+            </template>
+            <template is="dom-if" if="{{card.attack}}">
+                <div class="value attack">{{card.attack}}</div>
+            </template>
+            <template is="dom-if" if="{{card.range}}">
+                <div class="value range">{{card.range}}</div>
+            </template>
+        </div>
+    </div>
+    <template is="dom-if" if="{{card.ship}}">
+        <xwsb-maneuver-grid maneuvers="{{card.ship.maneuvers}}"></xwsb-maneuver-grid>
+    </template>
+    <div class="points">{{card.points}}</div>
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-card',
+            properties: {
+                card: {
+                    type: Object,
+                    notify: true,
+                    observer: '_changeCard'
+                }
+            },
+            _changeCard: function() {
+                if (this.card.bonuses) {
+                    this.bonusEnergy = this.card.bonuses.reduce(function(p, c) {
+                        if (c.prop === 'energy') {
+                            return p + c.value;
+                        } else {
+                            return p;
+                        }
+                    }, 0);
+                }
+                
+                if (!this.bonusEnergy && !this.card.energy && !this.card.attack && !this.card.range) {
+                    this.$.left.classList.remove('left');
+                    this.$.right.hidden = true;   
+                }
+                if (!this.bonusEnergy && !this.card.energy) {
+                    this.$.right.classList.add('attack-top');
+                }
+            }
+        });
+    })();
+</script>
+
+</dom-module>
