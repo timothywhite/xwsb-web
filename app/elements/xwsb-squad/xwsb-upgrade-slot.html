@@ -53,10 +53,21 @@
     paper-item {
         border-bottom: 1px solid var(--divider-color);
     }
+    #dialog {
+        min-width: 350px;
+        max-width: 350px;
+    }
     #dialog [icon="close"] {
         position: absolute;
         top: 5px;
         right: 5px;
+        margin-top: 0px;
+        padding: 0;
+    }
+    #dialog [icon="arrow-back"] {
+        position: absolute;
+        top: 5px;
+        left: 5px;
         margin-top: 0px;
         padding: 0;
     }
@@ -67,6 +78,10 @@
     .points::after {
         content: ")";
         margin-right: 5px;
+    }
+    xwsb-card {
+        display: block;
+        margin-top: 50px;
     }
 </style>
 
@@ -85,13 +100,16 @@
     </div>
     
     <paper-dialog id="dialog" modal>
-        <h4>Choose an Upgrade</h4>
-        <div class="scrollable">
+        <h4 id="title">Choose an Upgrade</h4>
+        <div id="upgrades" class="scrollable">
             <template is="dom-repeat" items="{{upgrades}}" as="upgrade" sort="_sortUpgrades">
-                <xwsb-upgrade-item upgrade="{{upgrade}}" on-tap="_changeUpgrade"></xwsb-upgrade-item>
+                <xwsb-upgrade-item upgrade="{{upgrade}}" on-tap="_changeUpgrade" on-info="_displayInfo"></xwsb-upgrade-item>
             </template>
         </div>
-        <iron-icon icon="close" dialog-dismiss></iron-icon>
+        <div id="info" hidden>
+        </div>
+        <iron-icon id="close" icon="close" dialog-dismiss></iron-icon>
+        <iron-icon id="back" icon="arrow-back" on-tap="_hideInfo" hidden></iron-icon>
     </paper-dialog>
     
 </template>
@@ -143,6 +161,21 @@
                 this._updateSlot();
                 this.fire('update');
             },
+            _displayInfo: function(evt) {                
+                var card = document.createElement('xwsb-card');
+                
+                this.$.info.innerHTML = '';
+                
+                card.card = evt.srcElement.upgrade;
+                this.$.info.appendChild(card);
+                
+                this.$.upgrades.hidden = true;
+                this.$.close.hidden = true;
+                this.$.title.hidden = true;
+                
+                this.$.back.hidden = false;
+                this.$.info.hidden = false;
+            },
             _getUpgrades: function() {
                 this.$.api.getUpgrades({
                     type: this.slot.id,
@@ -152,6 +185,14 @@
                 }).then(function(data) {
                     this.upgrades = data;
                 }.bind(this));
+            },
+            _hideInfo: function() {
+                this.$.info.hidden = true;
+                this.$.back.hidden = true;
+                
+                this.$.upgrades.hidden = false;
+                this.$.close.hidden = false;
+                this.$.title.hidden = false;
             },
             _hideSlot: function() {
                 this.$.container.hidden = this.hide;

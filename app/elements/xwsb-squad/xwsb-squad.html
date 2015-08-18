@@ -16,7 +16,6 @@
         width: 100%;
         background-color: var(--primary-background-color);
         padding: 10px 40px 10px 10px;
-        display: flex;
     }
     .title {
         font-size: 24px;
@@ -30,17 +29,20 @@
         margin: 7px 30px 0 0;
         width: 40px;
     }
-    .spacer {
-        max-width:425px;
+    .header {
+        max-width:635px;
+        display: flex;
     }
 </style>
 
 <template>
     
     <div class="toolbar">
-        <div class="title">{{name}}</div>
-        <span class="flex spacer"></span>
-        <div id="points" class="points">{{points}}</div>
+        <div class="header">
+            <div class="title">{{name}}</div>
+            <span class="flex"></span>
+            <div id="points" class="points">{{points}}</div>
+        </div>
     </div>
     <xwsb-api id="api"></xwsb-api>
     <div id="wrap">

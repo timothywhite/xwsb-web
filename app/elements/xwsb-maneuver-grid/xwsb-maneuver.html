@@ -7,16 +7,28 @@
 :host {
     text-align: center;
 }
-xwsb-icon {
+xwsb-icon:not(.energy) {
     -webkit-text-stroke: 1px black;
 }
 [icon="kturn"] {
    margin-left: 25px;
 }
+.energy {
+    font-size: 4px;
+    color: var(--xwsb-energy-color);
+    position: absolute;
+    right: -8px;
+    -webkit-text-stroke: .5px black;
+}
+#container {
+    position: relative;
+}
 </style>
 
 <template>
-    <xwsb-icon id="icon"></xwsb-icon> 
+    <span id="container">
+        <xwsb-icon id="icon"></xwsb-icon> 
+    </span>
 </template>
 <script>
     (function () {
@@ -55,6 +67,16 @@ xwsb-icon {
                 }
                 this.$.icon.icon = icon; //heh
                 this.$.icon.color = {'R': 'red', 'W': 'white', 'G': 'green'}[this.maneuver.color];
+                
+                if (this.maneuver.energy) {
+                    for (var i = 0; i < this.maneuver.energy; i++) {
+                        var el = document.createElement('xwsb-icon');
+                        el.icon = 'energy';
+                        el.classList.add('energy');
+                        el.style.bottom = (i * 7) - 10 + 'px';
+                        this.$.container.appendChild(el);
+                    }
+                }
                 
             }
         });

@@ -1,0 +1,31 @@
+
+<dom-module id="xwsb-card-title">
+
+<style>
+    :host {
+        display: block;
+    }
+</style>
+
+<template>
+    <template is="dom-if" if="{{card.unique}}">&#x2022;</template>
+    <span>{{card.name}}</span>
+</template>
+<script>
+    (function () {
+        Polymer({
+            is: 'xwsb-card-title',
+            properties: {
+                card: {
+                    type: Object,
+                    notify: true
+                }
+            },
+            ready: function() {
+                
+            }
+        });
+    })();
+</script>
+
+</dom-module>

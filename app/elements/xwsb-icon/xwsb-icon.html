@@ -44,6 +44,15 @@
             ready: function() {
                 
             },
+            _isHugeShip: function(ship) {
+                return [
+                    'gr75mediumtransport',
+                    'cr90corvettefore',
+                    'cr90corvetteaft',
+                    'raiderclasscorvfore',
+                    'raiderclasscorvaft'
+                ].indexOf(ship) !== -1;
+            },
             _isShip: function(ship) {
                 return [
                     'aggressor',
@@ -77,10 +86,13 @@
                 this.$.icon.style.color = this.color;
             },
             _updateIcon: function(newValue, oldValue) {
-                if (this._isShip(newValue)) {
+                if (this._isHugeShip(newValue)) {
+                    this.icon = 'energy';
+                } else if (this._isShip(newValue)) {
                     this.$.icon.classList.add('xwing-miniatures-ship');
                     this.$.icon.classList.remove('xwing-miniatures-font');
-
+                    this.$.icon.style.fontSize = '2em';
+                    
                     this.$.icon.classList.remove('xwing-miniatures-ship-' + oldValue);
                     this.$.icon.classList.add('xwing-miniatures-ship-' + newValue);
                 } else {

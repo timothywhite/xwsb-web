@@ -8,12 +8,15 @@
 	    paper-icon-item {
 	        border-bottom: 1px solid var(--divider-color);
 	    }
+	    xwsb-icon {
+	        font-size: 24px;
+	    }
 	</style>
 
 	<template>
 	  
 	  <paper-icon-item on-tap="_select">
-	      <xwsb-icon icon="{{ship.canonical}}" size="46px" item-icon></xwsb-icon>
+	      <xwsb-icon icon="{{ship.canonical}}" item-icon></xwsb-icon>
 	      <span>{{ship.name}}</span>
 	  </paper-item>
 			

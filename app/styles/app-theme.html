@@ -50,6 +50,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     --xwsb-agility-color: #6dbe45;
     --xwsb-shield-color: #7fd5e7;
     --xwsb-hull-color: #eeea1e;
+    --xwsb-energy-color: #D396CC;
   }
 
   body {
@@ -57,6 +58,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
 
   /* General styles */
+  
+  iron-pages {
+      height: calc(100% - 64px);
+  }
+  
+  iron-pages > div {
+      height: 100%;
+  }
   
   paper-dialog {
       background-color: var(--secondary-background-color);
@@ -151,6 +160,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   }
   .choose-faction {
       width: 200px;
+      height: 95px;
       text-align: center;
   }
   .choose-faction h4 {
