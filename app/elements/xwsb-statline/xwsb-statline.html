@@ -9,7 +9,7 @@
         display: inline-block;
         border: 1px solid var(--divider-color);
     }
-    span {
+    .stat {
         font-size: 1.5em;
         font-weight: bold;
     }
@@ -32,31 +32,57 @@
     .energy {
         color: var(--xwsb-energy-color);
     }
+    .range {
+        font-size: .75em;
+        display: none;
+    }
+    .attack-wrap {
+        display: inline-block;
+        margin-top: -12px;
+    }
+    .show-range xwsb-icon.attack {
+        font-size: .65em;
+        position: relative;
+        top: 8px;
+    }
+    .show-range .range {
+        display: block;
+        position:relative;
+        top: 3px;
+    }
 </style>
 
 <template>
-	  
-	  <span class="skill">{{skill}}</span>
-	  
-	  <template is="dom-if" if="{{attack}}">
-       <xwsb-icon class="attack" icon="attack"></xwsb-icon>
-       <span class="attack">{{attack}}</span>
-	  </template>
-	  
-	  <template is="dom-if" if="{{energy}}">
-       <xwsb-icon class="energy" icon="energy"></xwsb-icon>
-       <span class="energy">{{energy}}</span>
-	  </template>
-	  
-	  <xwsb-icon class="agility" icon="agility"></xwsb-icon>
-   <span class="agility">{{agility}}</span>
-	   
-	  <xwsb-icon class="hull" icon="hull"></xwsb-icon>
-   <span class="hull">{{hull}}</span>
-	  
-	  <xwsb-icon class="shield" icon="shield"></xwsb-icon>
-   <span class="shield">{{shield}}</span>
-	  
+    <div id="container" class="container">	  
+    	  <span class="stat skill">{{skill}}</span>
+    	  
+    	  <template is="dom-if" if="{{attack}}">
+    	      <span class="attack-wrap">
+        	      <template is="dom-if" if="{{!ship.turret}}">
+                   <xwsb-icon class="attack" icon="attack"></xwsb-icon>
+                </template>
+                <template is="dom-if" if="{{ship.turret}}">
+                   <xwsb-icon class="attack" icon="attack-turret"></xwsb-icon>
+                </template>
+                <span class="range">{{ship.range}}</span>
+           </span>
+           <span class="stat attack">{{attack}}</span>
+    	  </template>
+    	  
+    	  <template is="dom-if" if="{{energy}}">
+           <xwsb-icon class="energy" icon="energy"></xwsb-icon>
+           <span class="stat energy">{{energy}}</span>
+    	  </template>
+    	  
+    	  <xwsb-icon class="agility" icon="agility"></xwsb-icon>
+       <span class="stat agility">{{agility}}</span>
+    	   
+    	  <xwsb-icon class="hull" icon="hull"></xwsb-icon>
+       <span class="stat hull">{{hull}}</span>
+    	  
+    	  <xwsb-icon class="shield" icon="shield"></xwsb-icon>
+       <span class="stat shield">{{shield}}</span>
+    </div>
 </template>
 	
 <script>
@@ -115,6 +141,9 @@
                     this.hull = (this.pilot.hull ? this.pilot.hull : this.ship.hull) + (this.bonuses && this.bonuses.hull ? this.bonuses.hull : 0);
                     this.shield = (this.pilot.shield ? this.pilot.shield : this.ship.shield) + (this.bonuses && this.bonuses.shield ? this.bonuses.shield : 0);
                     this.energy = (this.pilot.energy ? this.pilot.energy : this.ship.energy) + (this.bonuses && this.bonuses.energy ? this.bonuses.energy : 0);
+                }
+                if (this.ship && this.ship.range !== '1-3') {
+                    this.$.container.classList.add('show-range');
                 }
             }
         });
